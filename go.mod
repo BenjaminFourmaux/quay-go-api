@@ -1,0 +1,1 @@
+module quay-go-api
