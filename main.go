@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"quay-go-api/logger"
+	"quay-go-api/api"
+	"quay-go-api/service/logger"
 )
 
 func main() {
@@ -12,5 +13,5 @@ func main() {
 		logger.SetLevel(logger.LevelDebug)
 	}
 
-	logger.Debug("An error occurred")
+	api.StartServer()
 }
