@@ -1,19 +1,20 @@
-# Project Name
+# Quay Go API
 
 [![](https://img.shields.io/badge/github-template?logo=github&color=gray)]()
 [![](https://badgen.net/badge/icon/docker?icon=docker&label)]()
 
-Default GitHub repository template for OpenSource project
+A wrapper of the Quay registry API written in Go.
+This side project aims to be fully integrated in the [Quay](https://github.com/quay/quay) beacause Go is in the cloud-native philosophy and because the Quay API in Python is not REST compliant in some points.
 
 ## Get stated :rocket:
-Don't forget to change variables `{{repository.name}}` by the current values in template file (and ressource url).
+
 
 ## Version
-[![](https://badgen.net/github/tag/BenjaminFourmaux/{{repository.name}}?cache=600)](https://github.com/BenjaminFourmaux{{repository.name}}/tags) [![](https://badgen.net/github/release/BenjaminFourmaux/{{repository.name}}?cache=600)](https://github.com/BenjaminFourmaux/{{repository.name}}/releases)
+[![](https://badgen.net/github/tag/BenjaminFourmaux/quay-go-api?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/tags) [![](https://badgen.net/github/release/BenjaminFourmaux/quay-go-api}?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/releases)
 - [coming soon][v1] First API version with basic actions
 
 ## Contributors 👪
-[![](https://badgen.net/github/contributors/BenjaminFourmaux/{{repository.name}})](https://github.com/BenjaminFourmaux/{{repository.name}}/graphs/contributors)
+[![](https://badgen.net/github/contributors/BenjaminFourmaux/quay-go-api)](https://github.com/BenjaminFourmaux/quay-go-api/graphs/contributors)
 - :crown: [Benjamin Fourmaux](https://github.com/BenjaminFourmaux)
 
 ## Licence ⚖️
@@ -25,4 +26,4 @@ You can:
 
 You must **Mention** the © Copyright if you use and modified code for your own profit. Thank you
 
-© {{date.year}} - {{repository.owner}} - All right reserved
+© 2026 - Benjamin Fourmaux - All right reserved
