@@ -1,0 +1,18 @@
+info:
+  contact: {}
+  description: Quay registry API implemented in Go
+  title: Quay Go API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Get the API health status
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get the API health status
+      tags:
+      - Health
+swagger: "2.0"
