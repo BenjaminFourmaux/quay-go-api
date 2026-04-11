@@ -2,20 +2,29 @@ package main
 
 import (
 	"os"
-	"quay-go-api/api"
+	"quay-go-api/Api"
+	"quay-go-api/Database"
+	"quay-go-api/Services/Logger"
 	_ "quay-go-api/docs"
-	"quay-go-api/service/logger"
 )
 
 // @title Quay Go API
 // @version 1.0
 // @description Quay registry API implemented in Go
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description API key authentication using the Authorization header. The value should be in the format "Bearer {token}"
 func main() {
 	if logLevel := os.Getenv("LOG_LEVEL"); logLevel != "" {
-		logger.SetLevel(logger.StringToLevel(logLevel))
+		Logger.SetLevel(Logger.StringToLevel(logLevel))
 	} else {
-		logger.SetLevel(logger.LevelDebug)
+		Logger.SetLevel(Logger.LevelDebug)
 	}
 
-	api.StartServer()
+	// Connect to the database
+	Database.ConnectDatabase()
+
+	// Start the HTTP server
+	Api.StartServer()
 }

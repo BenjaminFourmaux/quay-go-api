@@ -1,9 +1,43 @@
+definitions:
+  Errors.ErrorDetails:
+    properties:
+      code:
+        description: Code is a sting that represents the error code (e.g. "USER_NOT_FOUND",
+          "INVALID_INPUT", etc.)
+        type: string
+      message:
+        type: string
+    type: object
+  Errors.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/Errors.ErrorDetails'
+    type: object
+  Models.User:
+    type: object
 info:
   contact: {}
   description: Quay registry API implemented in Go
   title: Quay Go API
   version: "1.0"
 paths:
+  /api/v1/users/me:
+    get:
+      description: Get the current authenticated user information
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the current authenticated user information
+      tags:
+      - Users
   /health:
     get:
       description: Get the API health status
@@ -15,4 +49,11 @@ paths:
       summary: Get the API health status
       tags:
       - Health
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key authentication using the Authorization header. The value
+      should be in the format "Bearer {token}"
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
