@@ -67,7 +67,7 @@ func authorizedMiddleware(c *gin.Context) {
 
 	// Add token retried scopes to the context for later use in the endpoint handler
 	c.Set("scopes", validatedToken.Scope)
-	c.Set("userID", validatedToken.AuthorizedUserID)
+	c.Set("authenticatedUserId", validatedToken.AuthorizedUserID)
 
 	c.Next()
 }
