@@ -3,9 +3,10 @@ package Services
 import (
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Repositories"
+	"quay-go-api/Services/Auth"
 )
 
-func GetMeInfo(userId int) (Dto.UserMeResponse, error) {
+func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) {
 	userModel := Repositories.GetUserByIdWithUserInformation(userId)
 
 	// Convert models to dto
@@ -17,9 +18,26 @@ func GetMeInfo(userId int) (Dto.UserMeResponse, error) {
 			Metadata:          federatedLogin.MetadataJson,
 		})
 	}
+
 	userPrompts := []string{}
 	for _, prompt := range userModel.Prompts {
 		userPrompts = append(userPrompts, prompt.Kind.Name)
+	}
+
+	userOrgs := []Dto.Organization{}
+	if Auth.Can(Auth.ReadUser, userScopes) {
+		orgsModel, _ := Repositories.GetUserOrganizations(userModel.Username)
+
+		for _, org := range orgsModel {
+			userOrgs = append(userOrgs, Dto.Organization{
+				Name:               org.Username,
+				Avatar:             GetAvatarForOrg(org),
+				CanCreateRepo:      Auth.Can(Auth.CreateRepo, userScopes),
+				Public:             false, // TODO: check if the org name not in list of public Namespaces
+				IsOrgAdmin:         Auth.Can(Auth.OrgAdmin, userScopes),
+				PreferredNamespace: !(!userModel.StripeId.Valid || userModel.StripeId.String == ""),
+			})
+		}
 	}
 
 	userDto := Dto.UserMeResponse{
@@ -42,6 +60,7 @@ func GetMeInfo(userId int) (Dto.UserMeResponse, error) {
 		Location:            Dto.NullString(userModel.Location),
 		IsFreeAccount:       !userModel.StripeId.Valid || userModel.StripeId.String == "", // if stripe id is empty, it's a free account
 		HasPasswordSet:      userModel.PasswordHash.Valid && userModel.PasswordHash.String != "",
+		Organizations:       userOrgs,
 		SuperUser:           true, // where is this info ?
 	}
 

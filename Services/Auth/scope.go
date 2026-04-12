@@ -1,5 +1,7 @@
 package Auth
 
+import "strings"
+
 type Scope struct {
 	ID          string // ID of the scope, e.g., "repo:read"
 	Name        string // Name of the scope, e.g., "ReadRepo"
@@ -115,4 +117,26 @@ func GetScopeFromID(scopeId string) Scope {
 	default:
 		return Scope{}
 	}
+}
+
+func ConvertListIdToScopes(scopesIds string) []Scope {
+	scopes := []Scope{}
+	split := strings.Split(scopesIds, " ")
+
+	for _, scopeId := range split {
+		scopes = append(scopes, GetScopeFromID(scopeId))
+	}
+	return scopes
+}
+
+/*
+Can find if the scope is included in the user scopes, returning true if the scope is included in the user scopes, false otherwise
+*/
+func Can(scope Scope, userScopes []Scope) bool {
+	for _, userScope := range userScopes {
+		if userScope.ID == scope.ID {
+			return true
+		}
+	}
+	return false
 }

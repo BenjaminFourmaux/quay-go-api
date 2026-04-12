@@ -13,6 +13,9 @@ func usersController() {
 		users.Use(authorizedMiddleware)
 		users.GET("/me", getCurrentUser)
 	}
+
+	// Just to avoid cleanup dependency
+	_ = dto.UserMeResponse{}
 }
 
 // getCurrentUser Get the current authenticated user information
@@ -24,16 +27,16 @@ func usersController() {
 // @Security ApiKeyAuth
 // @Router /api/v1/users/me [get]
 func getCurrentUser(c *gin.Context) {
-	_ = dto.UserMeResponse{}
-	hasScopes := requiredScopes(c, []Auth.Scope{Auth.ReadUser})
-	if hasScopes != nil {
-		throwError(c, hasScopes)
+	hasScopesErr := requiredScopes(c, []Auth.Scope{Auth.ReadUser})
+	if hasScopesErr != nil {
+		throwError(c, hasScopesErr)
 		return
 	}
 
 	userId, _ := c.Get("authenticatedUserId")
+	userScopes := Auth.ConvertListIdToScopes(c.GetString("scopes"))
 
-	userInfo, err := Services.GetMeInfo(userId.(int))
+	userInfo, err := Services.GetMeInfo(userId.(int), userScopes)
 	if err != nil {
 		throwError(c, err)
 		return

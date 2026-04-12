@@ -1,4 +1,92 @@
 definitions:
+  Dto.Avatar:
+    properties:
+      color:
+        description: hex color code
+        type: string
+      hash:
+        type: string
+      kind:
+        description: e.g., "user", "org"
+        type: string
+      name:
+        type: string
+    type: object
+  Dto.Organization:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_create_repo:
+        type: boolean
+      is_org_admin:
+        type: boolean
+      name:
+        type: string
+      preferred_namespace:
+        type: boolean
+      public:
+        type: boolean
+    type: object
+  Dto.UserLogin:
+    properties:
+      metadata: {}
+      service:
+        type: string
+      service_identifier:
+        type: string
+    type: object
+  Dto.UserMeResponse:
+    properties:
+      anonymous:
+        type: boolean
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_create_repo:
+        type: boolean
+      company:
+        type: string
+      email:
+        type: string
+      family_name:
+        type: string
+      given_name:
+        type: string
+      has_password_set:
+        type: boolean
+      invoice_email:
+        type: boolean
+      invoice_email_address:
+        type: string
+      is_free_account:
+        type: boolean
+      is_me:
+        type: boolean
+      location:
+        type: string
+      logins:
+        items:
+          $ref: '#/definitions/Dto.UserLogin'
+        type: array
+      organizations:
+        items:
+          $ref: '#/definitions/Dto.Organization'
+        type: array
+      preferred_namespace:
+        type: boolean
+      prompts:
+        description: AI feature in coming ??
+        items:
+          type: string
+        type: array
+      super_user:
+        type: boolean
+      tag_expiration_s:
+        type: integer
+      username:
+        type: string
+      verified:
+        type: boolean
+    type: object
   Errors.ErrorDetails:
     properties:
       code:
@@ -13,8 +101,6 @@ definitions:
       error:
         $ref: '#/definitions/Errors.ErrorDetails'
     type: object
-  Models.User:
-    type: object
 info:
   contact: {}
   description: Quay registry API implemented in Go
@@ -28,7 +114,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Models.User'
+            $ref: '#/definitions/Dto.UserMeResponse'
         "401":
           description: Unauthorized
           schema:
