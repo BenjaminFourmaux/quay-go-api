@@ -37,6 +37,7 @@ func StartServer() {
 
 func endpointsRegistration() {
 	healthController()
+	messagesController()
 	usersController()
 
 	// Add Swagger endpoint
@@ -47,7 +48,7 @@ func endpointsRegistration() {
 authorizedMiddleware is a middleware function that checks if the request is authorized to access the endpoint
 */
 func authorizedMiddleware(c *gin.Context) {
-	// Check if Authorization header is present and not empty
+	// Check if the Authorization header is present and not empty
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
 		err := Errors.Unauthorized()

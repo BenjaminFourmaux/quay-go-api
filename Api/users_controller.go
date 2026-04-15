@@ -24,6 +24,7 @@ func usersController() {
 // @Tags Users
 // @Success 200 {object} dto.UserMeResponse
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/users/me [get]
 func getCurrentUser(c *gin.Context) {

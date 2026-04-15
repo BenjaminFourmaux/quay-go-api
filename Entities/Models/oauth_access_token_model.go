@@ -4,7 +4,7 @@ import "time"
 
 type OauthAccessToken struct {
 	ID               int    `gorm:"primaryKey;autoIncrement"`
-	UUID             string `gorm:"type:varchar(255);not null"`
+	UUID             string `gorm:"type:varchar(36);not null"`
 	ApplicationID    int    `gorm:"not null"`
 	AuthorizedUserID int    `gorm:"not null"`
 	//AuthorizedUser   User      `gorm:"foreignKey:AuthorizedUserID"`
