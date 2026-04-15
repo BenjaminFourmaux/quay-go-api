@@ -1,4 +1,4 @@
-package logger
+package Logger
 
 import (
 	"strings"
@@ -32,6 +32,7 @@ func SetLevel(level Level) {
 	levelMu.Lock()
 	currentLevel = level
 	levelMu.Unlock()
+	println("Log level set to: " + levelToString(level))
 }
 
 func GetLevel() Level {

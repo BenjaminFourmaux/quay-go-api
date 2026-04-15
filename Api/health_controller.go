@@ -1,4 +1,4 @@
-package api
+package Api
 
 import (
 	"github.com/gin-gonic/gin"

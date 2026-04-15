@@ -1,9 +1,129 @@
+definitions:
+  Dto.Avatar:
+    properties:
+      color:
+        description: hex color code
+        type: string
+      hash:
+        type: string
+      kind:
+        description: e.g., "user", "org"
+        type: string
+      name:
+        type: string
+    type: object
+  Dto.Organization:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_create_repo:
+        type: boolean
+      is_org_admin:
+        type: boolean
+      name:
+        type: string
+      preferred_namespace:
+        type: boolean
+      public:
+        type: boolean
+    type: object
+  Dto.UserLogin:
+    properties:
+      metadata: {}
+      service:
+        type: string
+      service_identifier:
+        type: string
+    type: object
+  Dto.UserMeResponse:
+    properties:
+      anonymous:
+        type: boolean
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_create_repo:
+        type: boolean
+      company:
+        type: string
+      email:
+        type: string
+      family_name:
+        type: string
+      given_name:
+        type: string
+      has_password_set:
+        type: boolean
+      invoice_email:
+        type: boolean
+      invoice_email_address:
+        type: string
+      is_free_account:
+        type: boolean
+      is_me:
+        type: boolean
+      location:
+        type: string
+      logins:
+        items:
+          $ref: '#/definitions/Dto.UserLogin'
+        type: array
+      organizations:
+        items:
+          $ref: '#/definitions/Dto.Organization'
+        type: array
+      preferred_namespace:
+        type: boolean
+      prompts:
+        description: AI feature in coming ??
+        items:
+          type: string
+        type: array
+      super_user:
+        type: boolean
+      tag_expiration_s:
+        type: integer
+      username:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  Errors.ErrorDetails:
+    properties:
+      code:
+        description: Code is a sting that represents the error code (e.g. "USER_NOT_FOUND",
+          "INVALID_INPUT", etc.)
+        type: string
+      message:
+        type: string
+    type: object
+  Errors.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/Errors.ErrorDetails'
+    type: object
 info:
   contact: {}
   description: Quay registry API implemented in Go
   title: Quay Go API
   version: "1.0"
 paths:
+  /api/v1/users/me:
+    get:
+      description: Get the current authenticated user information
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.UserMeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the current authenticated user information
+      tags:
+      - Users
   /health:
     get:
       description: Get the API health status
@@ -15,4 +135,11 @@ paths:
       summary: Get the API health status
       tags:
       - Health
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key authentication using the Authorization header. The value
+      should be in the format "Bearer {token}"
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

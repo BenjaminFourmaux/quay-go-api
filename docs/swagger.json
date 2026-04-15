@@ -7,6 +7,34 @@
         "version": "1.0"
     },
     "paths": {
+        "/api/v1/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the current authenticated user information",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get the current authenticated user information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UserMeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Get the API health status",
@@ -23,6 +51,168 @@
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "Dto.Avatar": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "description": "hex color code",
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "e.g., \"user\", \"org\"",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.Organization": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "can_create_repo": {
+                    "type": "boolean"
+                },
+                "is_org_admin": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preferred_namespace": {
+                    "type": "boolean"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Dto.UserLogin": {
+            "type": "object",
+            "properties": {
+                "metadata": {},
+                "service": {
+                    "type": "string"
+                },
+                "service_identifier": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.UserMeResponse": {
+            "type": "object",
+            "properties": {
+                "anonymous": {
+                    "type": "boolean"
+                },
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "can_create_repo": {
+                    "type": "boolean"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "family_name": {
+                    "type": "string"
+                },
+                "given_name": {
+                    "type": "string"
+                },
+                "has_password_set": {
+                    "type": "boolean"
+                },
+                "invoice_email": {
+                    "type": "boolean"
+                },
+                "invoice_email_address": {
+                    "type": "string"
+                },
+                "is_free_account": {
+                    "type": "boolean"
+                },
+                "is_me": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "logins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.UserLogin"
+                    }
+                },
+                "organizations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.Organization"
+                    }
+                },
+                "preferred_namespace": {
+                    "type": "boolean"
+                },
+                "prompts": {
+                    "description": "AI feature in coming ??",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "super_user": {
+                    "type": "boolean"
+                },
+                "tag_expiration_s": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Errors.ErrorDetails": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Code is a sting that represents the error code (e.g. \"USER_NOT_FOUND\", \"INVALID_INPUT\", etc.)",
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Errors.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/Errors.ErrorDetails"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "API key authentication using the Authorization header. The value should be in the format \"Bearer {token}\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }
