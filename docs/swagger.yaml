@@ -12,6 +12,24 @@ definitions:
       name:
         type: string
     type: object
+  Dto.CreateMessage:
+    properties:
+      content:
+        type: string
+      severity:
+        type: string
+    type: object
+  Dto.Message:
+    properties:
+      content:
+        type: string
+      media_type:
+        type: string
+      severity:
+        type: string
+      uuid:
+        type: string
+    type: object
   Dto.Organization:
     properties:
       avatar:
@@ -26,6 +44,13 @@ definitions:
         type: boolean
       public:
         type: boolean
+    type: object
+  Dto.UpdateMessage:
+    properties:
+      content:
+        type: string
+      severity:
+        type: string
     type: object
   Dto.UserLogin:
     properties:
@@ -107,6 +132,119 @@ info:
   title: Quay Go API
   version: "1.0"
 paths:
+  /api/v1/messages:
+    get:
+      description: List messages displayed on the quay web app for all user
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.Message'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List messages displayed on the quay web app for all user
+      tags:
+      - Messages
+    post:
+      consumes:
+      - application/json
+      description: Create a new message to displayed on the quay web app for all user
+      parameters:
+      - description: Message content and severity
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateMessage'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new message to displayed on the quay web app for all user
+      tags:
+      - Messages
+  /api/v1/messages/{uuid}:
+    delete:
+      description: Delete a message
+      parameters:
+      - description: UUID of the message to update
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a message
+      tags:
+      - Messages
+    patch:
+      consumes:
+      - application/json
+      description: Update the content or the severity of an existing message displayed
+        on the quay web app for all user
+      parameters:
+      - description: UUID of the message to update
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Message content and severity
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateMessage'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update the content or the severity of an existing message displayed
+        on the quay web app for all user
+      tags:
+      - Messages
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information
@@ -117,6 +255,10 @@ paths:
             $ref: '#/definitions/Dto.UserMeResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/Errors.ErrorResponse'
       security:

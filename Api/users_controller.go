@@ -2,7 +2,6 @@ package Api
 
 import (
 	"github.com/gin-gonic/gin"
-	dto "quay-go-api/Entities/Dto"
 	"quay-go-api/Services"
 	"quay-go-api/Services/Auth"
 )
@@ -13,17 +12,15 @@ func usersController() {
 		users.Use(authorizedMiddleware)
 		users.GET("/me", getCurrentUser)
 	}
-
-	// Just to avoid cleanup dependency
-	_ = dto.UserMeResponse{}
 }
 
 // getCurrentUser Get the current authenticated user information
 // @Description Get the current authenticated user information
 // @Summary Get the current authenticated user information
 // @Tags Users
-// @Success 200 {object} dto.UserMeResponse
+// @Success 200 {object} Dto.UserMeResponse
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/users/me [get]
 func getCurrentUser(c *gin.Context) {
