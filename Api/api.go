@@ -41,7 +41,9 @@ func endpointsRegistration() {
 	usersController()
 
 	// Add Swagger endpoint
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
+		config.PersistAuthorization = true
+	}))
 }
 
 /*
