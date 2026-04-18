@@ -1,6 +1,6 @@
 package Models
 
-type Messages struct {
+type Message struct {
 	ID          int    `gorm:"primaryKey;autoIncrement"`
 	UUID        string `gorm:"type:varchar(36);not null"`
 	Content     string `gorm:"type:text;not null"`         // Content of the message (in text, markdown format or plain text)
@@ -11,6 +11,6 @@ type Messages struct {
 	MediaType MediaType `gorm:"foreignKey:MediaTypeId;references:ID"` // MediaType of the message (text, markdown, etc.)
 }
 
-func (l *Messages) TableName() string {
+func (l *Message) TableName() string {
 	return "messages"
 }

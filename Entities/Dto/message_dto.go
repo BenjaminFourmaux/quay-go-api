@@ -6,3 +6,8 @@ type Message struct {
 	Severity  string `json:"severity"`
 	MediaType string `json:"media_type"`
 }
+
+type CreateMessage struct {
+	Content  string `json:"content"`
+	Severity string `json:"severity"`
+}

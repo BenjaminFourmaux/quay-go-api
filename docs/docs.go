@@ -22,11 +22,11 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "List messages displayed in the quay web app for all user",
+                "description": "List messages displayed on the quay web app for all user",
                 "tags": [
                     "Messages"
                 ],
-                "summary": "List messages displayed in the quay web app for all user",
+                "summary": "List messages displayed on the quay web app for all user",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -35,6 +35,52 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/Dto.Message"
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new message to displayed on the quay web app for all user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Create a new message to displayed on the quay web app for all user",
+                "parameters": [
+                    {
+                        "description": "Message content and severity",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreateMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Message"
                         }
                     },
                     "401": {
@@ -120,6 +166,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.CreateMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "severity": {
                     "type": "string"
                 }
             }
