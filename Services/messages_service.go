@@ -83,3 +83,7 @@ func UpdateMessage(messageUUID string, message Dto.UpdateMessage) (Dto.Message, 
 
 	return messageDto, nil
 }
+
+func DeleteMessage(messageUUID string) error {
+	return Repositories.DeleteMessage(messageUUID)
+}

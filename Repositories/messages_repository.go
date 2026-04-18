@@ -52,3 +52,7 @@ func UpdateMessage(message Models.Message) (Models.Message, error) {
 
 	return message, nil
 }
+
+func DeleteMessage(messageUUID string) error {
+	return Database.DB.Where("uuid = ?", messageUUID).Delete(&Models.Message{}).Error
+}

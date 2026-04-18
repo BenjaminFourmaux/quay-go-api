@@ -15,7 +15,7 @@ func messagesController() {
 		messages.GET("/", listMessages)
 		messages.POST("/", createMessage)
 		messages.PATCH("/:uuid", updateMessage)
-		/*messages.DELETE("/:uuid", deleteMessage)*/
+		messages.DELETE("/:uuid", deleteMessage)
 	}
 }
 
@@ -103,4 +103,31 @@ func updateMessage(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, updatedMessage)
+}
+
+// deleteMessage Delete a message
+// @Description Delete a message
+// @Summary Delete a message
+// @Tags Messages
+// @Param uuid path string true "UUID of the message to update"
+// @Success 204 "No Content"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/messages/{uuid} [delete]
+func deleteMessage(c *gin.Context) {
+	hasScopesErr := requiredScopes(c, []Auth.Scope{Auth.AdminUser})
+	if hasScopesErr != nil {
+		throwError(c, hasScopesErr)
+		return
+	}
+
+	messageUUID := c.Param("uuid")
+
+	err := Services.DeleteMessage(messageUUID)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

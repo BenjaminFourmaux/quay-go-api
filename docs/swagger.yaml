@@ -185,6 +185,30 @@ paths:
       tags:
       - Messages
   /api/v1/messages/{uuid}:
+    delete:
+      description: Delete a message
+      parameters:
+      - description: UUID of the message to update
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a message
+      tags:
+      - Messages
     patch:
       consumes:
       - application/json
