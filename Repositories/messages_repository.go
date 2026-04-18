@@ -1,6 +1,7 @@
 package Repositories
 
 import (
+	"gorm.io/gorm"
 	"quay-go-api/Database"
 	"quay-go-api/Entities/Models"
 )
@@ -24,5 +25,30 @@ func CreateMessage(message Models.Message) (Models.Message, error) {
 	if err != nil {
 		return Models.Message{}, err
 	}
+	return message, nil
+}
+
+func UpdateMessage(message Models.Message) (Models.Message, error) {
+	tx := Database.DB.Model(&Models.Message{}).
+		Where("uuid = ?", message.UUID).
+		Updates(map[string]interface{}{
+			"content":       message.Content,
+			"severity":      message.Severity,
+			"media_type_id": message.MediaTypeId,
+		})
+
+	if tx.Error != nil {
+		return Models.Message{}, tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return Models.Message{}, gorm.ErrRecordNotFound
+	}
+
+	err := Database.DB.Preload("MediaType").Where("uuid = ?", message.UUID).First(&message).Error
+	if err != nil {
+		return Models.Message{}, err
+	}
+
 	return message, nil
 }

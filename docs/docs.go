@@ -98,6 +98,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/messages/{uuid}": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update the content or the severity of an existing message displayed on the quay web app for all user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Update the content or the severity of an existing message displayed on the quay web app for all user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID of the message to update",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message content and severity",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -218,6 +273,17 @@ const docTemplate = `{
                 },
                 "public": {
                     "type": "boolean"
+                }
+            }
+        },
+        "Dto.UpdateMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
                 }
             }
         },

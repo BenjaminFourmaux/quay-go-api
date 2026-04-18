@@ -55,3 +55,31 @@ func CreateMessage(message Dto.CreateMessage) (Dto.Message, error) {
 
 	return messageDto, nil
 }
+
+func UpdateMessage(messageUUID string, message Dto.UpdateMessage) (Dto.Message, error) {
+	// Check severity is valid
+	if message.Severity != "" && message.Severity != "info" && message.Severity != "warning" && message.Severity != "error" {
+		return Dto.Message{}, Errors.MessageInvalidSeverity(message.Severity)
+	}
+
+	messageToUpdate := Models.Message{
+		UUID:        messageUUID,
+		Content:     message.Content,
+		Severity:    message.Severity,
+		MediaTypeId: 3, // text/markdown
+	}
+
+	messageModel, err := Repositories.UpdateMessage(messageToUpdate)
+	if err != nil {
+		return Dto.Message{}, err
+	}
+
+	messageDto := Dto.Message{
+		UUID:      messageModel.UUID,
+		Content:   messageModel.Content,
+		Severity:  messageModel.Severity,
+		MediaType: messageModel.MediaType.Name,
+	}
+
+	return messageDto, nil
+}

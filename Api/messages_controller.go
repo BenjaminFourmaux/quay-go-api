@@ -14,8 +14,8 @@ func messagesController() {
 		messages.Use(authorizedMiddleware)
 		messages.GET("/", listMessages)
 		messages.POST("/", createMessage)
-		/*messages.PATCH("/:uuid", updateMessage)
-		messages.DELETE("/:uuid", deleteMessage)*/
+		messages.PATCH("/:uuid", updateMessage)
+		/*messages.DELETE("/:uuid", deleteMessage)*/
 	}
 }
 
@@ -71,4 +71,36 @@ func createMessage(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, createdMessage)
+}
+
+// updateMessage Update the content or the severity of an existing message displayed on the quay web app for all user
+// @Description Update the content or the severity of an existing message displayed on the quay web app for all user
+// @Summary Update the content or the severity of an existing message displayed on the quay web app for all user
+// @Tags Messages
+// @Accept json
+// @Param uuid path string true "UUID of the message to update"
+// @Param message body Dto.UpdateMessage true "Message content and severity"
+// @Success 200 {object} Dto.Message
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/messages/{uuid} [patch]
+func updateMessage(c *gin.Context) {
+	hasScopesErr := requiredScopes(c, []Auth.Scope{Auth.AdminUser})
+	if hasScopesErr != nil {
+		throwError(c, hasScopesErr)
+		return
+	}
+
+	messageUUID := c.Param("uuid")
+
+	var updateMessage Dto.UpdateMessage
+	_ = c.BindJSON(&updateMessage)
+
+	updatedMessage, err := Services.UpdateMessage(messageUUID, updateMessage)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, updatedMessage)
 }

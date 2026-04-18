@@ -11,3 +11,8 @@ type CreateMessage struct {
 	Content  string `json:"content"`
 	Severity string `json:"severity"`
 }
+
+type UpdateMessage struct {
+	Content  string `json:"content"`
+	Severity string `json:"severity"`
+}
