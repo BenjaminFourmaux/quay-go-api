@@ -5,9 +5,6 @@
 
 An API designed to be deployed alongside the official Quay API and to interface with Quay's database to provide features for automation.
 
-
-This side project aims to be fully integrated in the [Quay](https://github.com/quay/quay) beacause Go is in the cloud-native philosophy and because the Quay API in Python is not REST compliant in some points.
-
 ## Get stated :rocket:
 
 

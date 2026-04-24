@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+.vscode
+bin
+tmp
+dist
+coverage
+*.log
+*.md
+docker-compose*
