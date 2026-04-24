@@ -43,6 +43,15 @@ swag init
 
 ### Docker image 🐳
 
+Pull the Docker image from [Docker Hub](https://hub.docker.com/r/benjaminfourmauxb/quay-go-api)
+```
+docker pull benjaminfourmauxb/quay-go-api:latest
+```
+
+Run the container
+```
+docker run -d -e DB_TYPE=postgres -e DB_DSN=postgres://user:password@localhost:5432/quay -p 8080:8080 benjaminfourmauxb/quay-go-api:latest
+```
 
 ## Version
 [![](https://badgen.net/github/tag/BenjaminFourmaux/quay-go-api?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/tags) [![](https://badgen.net/github/release/BenjaminFourmaux/quay-go-api}?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/releases)
