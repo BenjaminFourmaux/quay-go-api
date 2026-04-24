@@ -7,6 +7,42 @@ An API designed to be deployed alongside the official Quay API and to interface 
 
 ## Get stated :rocket:
 
+### Local 💻
+
+Requirements:
+- GO `>= 1.24`
+- Quay registry setup
+  - Database PostgreSQL or MySQL are both supported
+  - Quay API token (superuser)
+
+
+Download dependancies
+```
+go mod download
+```
+
+Run the app
+```
+export DB_TYPE=postgres # Database type (postrges of mysql)
+export DB_DSN="postgres://user:password@localhost:5432/quay" # ConnectionString to the database
+export PORT=8080 # (optional) Port where the api is listening (default: 8080)
+export LOG_LEVEL=DEBUG # (optional) Adjust the log verbosity. Can be "DEBUG", "INFO", "WARNING" or "ERROR" (default: "DEBUG")
+go run main.go
+```
+
+Open the swagger, go to [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+
+Generate swagger docs
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+```
+swag init
+```
+
+### Docker image 🐳
+
 
 ## Version
 [![](https://badgen.net/github/tag/BenjaminFourmaux/quay-go-api?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/tags) [![](https://badgen.net/github/release/BenjaminFourmaux/quay-go-api}?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/releases)
