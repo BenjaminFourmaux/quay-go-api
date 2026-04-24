@@ -1,7 +1,7 @@
 # Quay Go API
 
-[![](https://img.shields.io/badge/github-template?logo=github&color=gray)]()
-[![](https://badgen.net/badge/icon/docker?icon=docker&label)]()
+[![](https://img.shields.io/badge/go-1.24-version?logo=go&color=rgb(0%2C%20126%2C%20198))]()
+[![](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/benjaminfourmauxb/quay-go-api)
 
 An API designed to be deployed alongside the official Quay API and to interface with Quay's database to provide features for automation.
 
