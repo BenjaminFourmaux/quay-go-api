@@ -53,15 +53,26 @@ Run the container
 docker run -d -e DB_TYPE=postgres -e DB_DSN=postgres://user:password@localhost:5432/quay -p 8080:8080 benjaminfourmauxb/quay-go-api:latest
 ```
 
+## Features ✨
+
+- **Direct database connection** — Connects directly to the Quay database, bypassing the Quay API layer.
+- **Improved error handling** — Structured and consistent error responses for easier debugging and integration.
+- **Better REST compliance** — Follows REST principles more closely with proper HTTP methods, status codes, and resource naming.
+
+For more details, see the [Wiki]().
+
 ## Version
+
 [![](https://badgen.net/github/tag/BenjaminFourmaux/quay-go-api?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/tags) [![](https://badgen.net/github/release/BenjaminFourmaux/quay-go-api}?cache=600)](https://github.com/BenjaminFourmaux/quay-go-api/releases)
 - [coming soon][v1] First API version with basic actions
 
 ## Contributors 👪
+
 [![](https://badgen.net/github/contributors/BenjaminFourmaux/quay-go-api)](https://github.com/BenjaminFourmaux/quay-go-api/graphs/contributors)
 - :crown: [Benjamin Fourmaux](https://github.com/BenjaminFourmaux)
 
 ## Licence ⚖️
+
 All files on this project is under [**Apache License v2**](https://www.apache.org/licenses/LICENSE-2.0).
 You can:
 - Reuse the code 
