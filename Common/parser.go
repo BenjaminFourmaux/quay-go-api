@@ -18,11 +18,11 @@ func ConvertScopeStringInAuthScopes(scopesStr string) []Auth.Scope {
 	return scopes
 }
 
-func ConvertUserModelsToDto(orgsModel []Models.User, currentUser Models.User, userScopes []Auth.Scope) []Dto.Organization {
-	var orgs []Dto.Organization
+func ConvertUserModelsToDto(orgsModel []Models.User, currentUser Models.User, userScopes []Auth.Scope) []Dto.UserOrganization {
+	var orgs []Dto.UserOrganization
 
 	for _, org := range orgsModel {
-		orgs = append(orgs, Dto.Organization{
+		orgs = append(orgs, Dto.UserOrganization{
 			Name:               org.Username,
 			Avatar:             Avatar.GetAvatarForOrg(org),
 			CanCreateRepo:      Auth.Can(Auth.CreateRepo, userScopes),

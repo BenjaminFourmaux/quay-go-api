@@ -52,5 +52,7 @@ func ConnectDatabase() {
 	if err != nil {
 		Logger.Error("Failed to connect to database: " + err.Error())
 		panic("Failed to connect to database: " + err.Error())
+	} else {
+		Logger.Info("Successfully connected to database")
 	}
 }

@@ -60,3 +60,27 @@ func MessageInvalidSeverity(wrongSeverity string) *ApiError {
 		},
 	}
 }
+
+func CurrentUserNotFound() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "current_user_not_found",
+				Message: "The current user does not exist",
+			},
+		},
+	}
+}
+
+func OrganizationNotFound(orgName string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "organization_not_found",
+				Message: "The organization '" + orgName + "' does not exist",
+			},
+		},
+	}
+}

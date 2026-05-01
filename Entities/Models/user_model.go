@@ -31,8 +31,9 @@ type User struct {
 	// Fk
 	FederatedLogins []FederatedLogin `gorm:"foreignKey:UserId;references:ID"`
 	Prompts         []UserPrompt     `gorm:"foreignKey:UserId;references:ID"`
+	Teams           []Team           `gorm:"foreignKey:OrganizationId;references:ID"` // Only for Organization
 }
 
-func (u *User) TableName() string {
+func (User) TableName() string {
 	return "user"
 }

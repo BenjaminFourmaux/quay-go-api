@@ -209,8 +209,51 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/Dto.Organization"
+                                "$ref": "#/definitions/Dto.UserOrganization"
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organization/{orgname}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get details in an organization",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get details in an organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Organization"
                         }
                     },
                     "401": {
@@ -334,20 +377,64 @@ const docTemplate = `{
                 "avatar": {
                     "$ref": "#/definitions/Dto.Avatar"
                 },
-                "can_create_repo": {
+                "email": {
+                    "type": "string"
+                },
+                "invoice_email": {
                     "type": "boolean"
                 },
-                "is_org_admin": {
+                "invoice_email_address": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "is_free_account": {
+                    "type": "boolean"
+                },
+                "is_member": {
                     "type": "boolean"
                 },
                 "name": {
                     "type": "string"
                 },
-                "preferred_namespace": {
+                "tag_expiration_s": {
+                    "type": "integer"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.Team"
+                    }
+                }
+            }
+        },
+        "Dto.Team": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "can_view": {
                     "type": "boolean"
                 },
-                "public": {
+                "description": {
+                    "type": "string"
+                },
+                "is_synced": {
                     "type": "boolean"
+                },
+                "members_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repo_count": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
@@ -425,7 +512,7 @@ const docTemplate = `{
                 "organizations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Dto.Organization"
+                        "$ref": "#/definitions/Dto.UserOrganization"
                     }
                 },
                 "preferred_namespace": {
@@ -448,6 +535,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Dto.UserOrganization": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "can_create_repo": {
+                    "type": "boolean"
+                },
+                "is_org_admin": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preferred_namespace": {
+                    "type": "boolean"
+                },
+                "public": {
                     "type": "boolean"
                 }
             }

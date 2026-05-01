@@ -12,6 +12,7 @@ func organizationController() {
 	{
 		organization.Use(authorizedMiddleware)
 		organization.GET("/", listOrganizations)
+		organization.GET("/:orgname", getOrganizationDetails)
 	}
 }
 
@@ -19,7 +20,7 @@ func organizationController() {
 // @Description List user's organizations
 // @Summary List user's organizations
 // @Tags Organization
-// @Success 200 {object} []Dto.Organization
+// @Success 200 {object} []Dto.UserOrganization
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
@@ -33,10 +34,41 @@ func listOrganizations(c *gin.Context) {
 
 	userId, _ := c.Get("authenticatedUserId")
 	userScopesInterface, _ := c.Get("scopes")
-
 	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
 
-	organization, err := Services.GetUserOrganization(userId.(int), userScopes)
+	organizations, err := Services.GetUserOrganizations(userId.(int), userScopes)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(200, organizations)
+}
+
+// getOrganizationDetails Get details in an organization
+// @Description Get details in an organization
+// @Summary Get details in an organization
+// @Tags Organization
+// @Param orgname path string true "Name of the organization"
+// @Success 200 {object} Dto.Organization
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname} [get]
+func getOrganizationDetails(c *gin.Context) {
+	hasScopesErr := requiredScopes(c, []Auth.Scope{})
+	if hasScopesErr != nil {
+		throwError(c, hasScopesErr)
+		return
+	}
+
+	userId, _ := c.Get("authenticatedUserId")
+	userScopesInterface, _ := c.Get("scopes")
+	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
+
+	orgname := c.Param("orgname")
+
+	organization, err := Services.GetOrganizationDetailsByName(orgname, userId.(int), userScopes)
 	if err != nil {
 		throwError(c, err)
 		return

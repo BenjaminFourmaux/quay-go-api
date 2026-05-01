@@ -2,6 +2,7 @@ package Services
 
 import (
 	"quay-go-api/Common"
+	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
@@ -9,7 +10,14 @@ import (
 )
 
 func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) {
-	userModel := Repositories.GetUserByIdWithUserInformation(userId)
+	userModel, err := Repositories.GetUserByIdWithUserInformation(userId)
+	if err != nil {
+		return Dto.UserMeResponse{}, err
+	}
+	if userModel.ID == 0 {
+		customErr := Errors.CurrentUserNotFound()
+		return Dto.UserMeResponse{}, customErr
+	}
 
 	// Convert models to dto
 	userLogins := []Dto.UserLogin{}
@@ -26,7 +34,7 @@ func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) 
 		userPrompts = append(userPrompts, prompt.Kind.Name)
 	}
 
-	userOrgs := []Dto.Organization{}
+	userOrgs := []Dto.UserOrganization{}
 	if Auth.Can(Auth.ReadUser, userScopes) {
 		orgsModel, _ := Repositories.GetUserOrganizations(userModel.ID)
 

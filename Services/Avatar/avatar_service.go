@@ -6,6 +6,7 @@ import (
 	"math"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Entities/Models"
+	"strconv"
 	"strings"
 )
 
@@ -49,6 +50,10 @@ func GetAvatarForUser(user Models.User) Dto.Avatar {
 
 func GetAvatarForOrg(org Models.User) Dto.Avatar {
 	return getAvatar(org.Username, org.Email, "org")
+}
+
+func GetAvatarForTeam(team Models.Team) Dto.Avatar {
+	return getAvatar(team.Name, strconv.Itoa(team.ID), "team")
 }
 
 func computeHash(usernameEmailOrId string) string {
