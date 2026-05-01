@@ -6,10 +6,10 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"os"
+	"quay-go-api/Common"
 	"quay-go-api/Common/Errors"
 	"quay-go-api/Services/Auth"
 	"quay-go-api/Services/Logger"
-	"strings"
 )
 
 var engine *gin.Engine
@@ -39,6 +39,7 @@ func endpointsRegistration() {
 	healthController()
 	messagesController()
 	usersController()
+	organizationController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
@@ -89,12 +90,7 @@ func requiredScopes(c *gin.Context, requiredScopes []Auth.Scope) error {
 		return fmt.Errorf("scopes in context is not a string")
 	}
 
-	scopeIDs := strings.Split(scopesStr, " ")
-	var scopes []Auth.Scope
-
-	for _, scopeID := range scopeIDs {
-		scopes = append(scopes, Auth.GetScopeFromID(scopeID))
-	}
+	scopes := Common.ConvertScopeStringInAuthScopes(scopesStr)
 
 	// Check if the user has the required scopes
 	missingScopes := []Auth.Scope{}

@@ -1,4 +1,4 @@
-package Services
+package Avatar
 
 import (
 	"crypto/sha256"
