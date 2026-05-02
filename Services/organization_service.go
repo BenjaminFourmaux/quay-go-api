@@ -9,9 +9,8 @@ import (
 	"quay-go-api/Services/Auth"
 )
 
-func GetUserOrganizations(userId int, userScopes []Auth.Scope) ([]Dto.UserOrganization, error) {
-	// Get the current user
-	currentUser, err := Repositories.GetUserById(userId)
+func GetUserOrganizations(currentUser Auth.AuthenticatedUser) ([]Dto.UserOrganization, error) {
+	user, err := Repositories.GetUserById(currentUser.ID)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -21,7 +20,7 @@ func GetUserOrganizations(userId int, userScopes []Auth.Scope) ([]Dto.UserOrgani
 		}
 	}
 
-	orgsModel, err := Repositories.GetUserOrganizations(userId)
+	orgsModel, err := Repositories.GetUserOrganizations(user.ID)
 	if err != nil {
 		switch err.Error() {
 		case "record not found": // if no result, is not an error, just return empty list
@@ -32,11 +31,11 @@ func GetUserOrganizations(userId int, userScopes []Auth.Scope) ([]Dto.UserOrgani
 	}
 
 	// Convert userModel into UserOrganization Dto
-	organizations := Common.ConvertUserModelsToDto(orgsModel, currentUser, userScopes)
+	organizations := Common.ConvertUserModelsToDto(orgsModel, user, currentUser.Scopes)
 	return organizations, nil
 }
 
-func CreateOrganization(organizationMetadata Dto.CreateOrganization, userId int, userScopes []Auth.Scope) (Dto.Organization, error) {
+func CreateOrganization(organizationMetadata Dto.CreateOrganization, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
 	// TODO: check if user has role to create org and check Features flag (not implement yet)
 
 	// Check if the org (or a user) already exists
@@ -57,7 +56,7 @@ func CreateOrganization(organizationMetadata Dto.CreateOrganization, userId int,
 		Organization: true,
 	}
 
-	createdOrgModel, err := Repositories.CreateOrganizationWithOwnerTeamTransaction(createOrgModel, userId)
+	createdOrgModel, err := Repositories.CreateOrganizationWithOwnerTeamTransaction(createOrgModel, currentUser.ID)
 	if err != nil {
 		return Dto.Organization{}, err
 	}
@@ -69,23 +68,12 @@ func CreateOrganization(organizationMetadata Dto.CreateOrganization, userId int,
 	}
 
 	// Convert model to dto
-	createdOrgDto := Common.ConvertUserModelToOrganizationDto(createdOrgModel, userId, userScopes)
+	createdOrgDto := Common.ConvertUserModelToOrganizationDto(createdOrgModel, currentUser.ID, currentUser.Scopes)
 
 	return createdOrgDto, nil
 }
 
-func GetOrganizationDetailsByName(orgName string, userId int, userScopes []Auth.Scope) (Dto.Organization, error) {
-	// Get the current user
-	currentUser, err := Repositories.GetUserById(userId)
-	if err != nil {
-		switch err.Error() {
-		case "record not found":
-			return Dto.Organization{}, Errors.CurrentUserNotFound()
-		default:
-			return Dto.Organization{}, err
-		}
-	}
-
+func GetOrganizationDetailsByName(orgName string, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
 	// Get the organization with details
 	orgModel, err := Repositories.GetOrganizationDetailsByName(orgName)
 	if err != nil {
@@ -97,7 +85,7 @@ func GetOrganizationDetailsByName(orgName string, userId int, userScopes []Auth.
 		}
 	}
 
-	orgDetailDto := Common.ConvertUserModelToOrganizationDto(orgModel, currentUser.ID, userScopes)
+	orgDetailDto := Common.ConvertUserModelToOrganizationDto(orgModel, currentUser.ID, currentUser.Scopes)
 
 	return orgDetailDto, nil
 }

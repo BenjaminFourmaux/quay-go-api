@@ -9,8 +9,8 @@ import (
 	"quay-go-api/Services/Avatar"
 )
 
-func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) {
-	userModel, err := Repositories.GetUserByIdWithUserInformation(userId)
+func GetMeInfo(currentUser Auth.AuthenticatedUser) (Dto.UserMeResponse, error) {
+	userModel, err := Repositories.GetUserByIdWithUserInformation(currentUser.ID)
 	if err != nil {
 		return Dto.UserMeResponse{}, err
 	}
@@ -35,10 +35,10 @@ func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) 
 	}
 
 	userOrgs := []Dto.UserOrganization{}
-	if Auth.Can(Auth.ReadUser, userScopes) {
+	if Auth.Can(Auth.ReadUser, currentUser.Scopes) {
 		orgsModel, _ := Repositories.GetUserOrganizations(userModel.ID)
 
-		userOrgs = Common.ConvertUserModelsToDto(orgsModel, userModel, userScopes)
+		userOrgs = Common.ConvertUserModelsToDto(orgsModel, userModel, currentUser.Scopes)
 	}
 
 	userDto := Dto.UserMeResponse{

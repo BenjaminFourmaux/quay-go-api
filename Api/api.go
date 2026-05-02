@@ -76,6 +76,25 @@ func authorizedMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+func retrieveCurrentUser(c *gin.Context, scopes []Auth.Scope) (Auth.AuthenticatedUser, error) {
+	// Check if the authenticated user has the required scopes
+	hasScopesErr := requiredScopes(c, scopes)
+	if hasScopesErr != nil {
+		return Auth.AuthenticatedUser{}, hasScopesErr
+	}
+	// If the user is allowed, retrieve the user information from the context (getting in the auth middleware) and return it
+	userId, _ := c.Get("authenticatedUserId")
+	userScopesInterface, _ := c.Get("scopes")
+	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
+
+	authenticatedUser := Auth.AuthenticatedUser{
+		ID:     userId.(int),
+		Scopes: userScopes,
+	}
+
+	return authenticatedUser, nil
+}
+
 /*
 requiredScopes checks if the user has the required scopes to access the endpoint, returning an error if the user is missing any of the required scopes
 */

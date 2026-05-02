@@ -3,7 +3,6 @@ package Api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"quay-go-api/Common"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Services"
 	"quay-go-api/Services/Auth"
@@ -29,17 +28,13 @@ func organizationController() {
 // @Security ApiKeyAuth
 // @Router /api/v1/organization [get]
 func listOrganizations(c *gin.Context) {
-	hasScopesErr := requiredScopes(c, []Auth.Scope{})
-	if hasScopesErr != nil {
-		throwError(c, hasScopesErr)
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
 		return
 	}
 
-	userId, _ := c.Get("authenticatedUserId")
-	userScopesInterface, _ := c.Get("scopes")
-	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
-
-	organizations, err := Services.GetUserOrganizations(userId.(int), userScopes)
+	organizations, err := Services.GetUserOrganizations(currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
@@ -60,20 +55,16 @@ func listOrganizations(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Router /api/v1/organization [post]
 func createOrganization(c *gin.Context) {
-	hasScopesErr := requiredScopes(c, []Auth.Scope{})
-	if hasScopesErr != nil {
-		throwError(c, hasScopesErr)
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
 		return
 	}
-
-	userId, _ := c.Get("authenticatedUserId")
-	userScopesInterface, _ := c.Get("scopes")
-	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
 
 	var organizationToCreate Dto.CreateOrganization
 	_ = c.BindJSON(&organizationToCreate)
 
-	newOrganization, err := Services.CreateOrganization(organizationToCreate, userId.(int), userScopes)
+	newOrganization, err := Services.CreateOrganization(organizationToCreate, currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
@@ -92,19 +83,15 @@ func createOrganization(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Router /api/v1/organization/{orgname} [get]
 func getOrganizationDetails(c *gin.Context) {
-	hasScopesErr := requiredScopes(c, []Auth.Scope{})
-	if hasScopesErr != nil {
-		throwError(c, hasScopesErr)
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
 		return
 	}
 
-	userId, _ := c.Get("authenticatedUserId")
-	userScopesInterface, _ := c.Get("scopes")
-	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
-
 	orgname := c.Param("orgname")
 
-	organization, err := Services.GetOrganizationDetailsByName(orgname, userId.(int), userScopes)
+	organization, err := Services.GetOrganizationDetailsByName(orgname, currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
