@@ -29,3 +29,10 @@ CreateOrganization Input type for create a new organization
 type CreateOrganization struct {
 	Name string `json:"name"`
 }
+
+type UpdateOrganization struct {
+	Email               *string `json:"email"`
+	InvoiceEmail        *bool   `json:"invoice_email"`
+	InvoiceEmailAddress *string `json:"invoice_email_address"`
+	TagExpirationS      *int    `json:"tag_expiration_s"`
+}

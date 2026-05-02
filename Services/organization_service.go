@@ -1,12 +1,14 @@
 package Services
 
 import (
+	"net/mail"
 	"quay-go-api/Common"
 	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
+	"strings"
 )
 
 func GetUserOrganizations(currentUser Auth.AuthenticatedUser) ([]Dto.UserOrganization, error) {
@@ -52,7 +54,7 @@ func CreateOrganization(organizationMetadata Dto.CreateOrganization, currentUser
 
 	// Convert dto to user model
 	var createOrgModel = Models.User{
-		Username:     organizationMetadata.Name,
+		Username:     strings.ToLower(organizationMetadata.Name),
 		Organization: true,
 	}
 
@@ -90,6 +92,83 @@ func GetOrganizationDetailsByName(orgName string, currentUser Auth.Authenticated
 	return orgDetailDto, nil
 }
 
+func DeleteOrganization(orgName string, currentUser Auth.AuthenticatedUser) error {
+	// Get the org (with detail, for user role checking) if exists
+	organizationToDeleteModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Errors.OrganizationNotFound(orgName)
+		default:
+			return err
+		}
+	}
+
+	// If the user is owners of the organization so it can delete this
+	if isUserIsOrgOwner(currentUser.ID, organizationToDeleteModel) {
+		err = Repositories.DeleteOrganizationTransaction(organizationToDeleteModel.ID)
+		if err != nil {
+			return err
+		}
+		// TODO: remove the namespace and Docker images ?
+	}
+	return nil
+}
+
+func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganization, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
+	// Get the org (with detail, for user role checking) if exists
+	organizationToUpdateModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Dto.Organization{}, Errors.OrganizationNotFound(orgName)
+		default:
+			return Dto.Organization{}, err
+		}
+	}
+
+	// If the user is owners of the organization so it can update this
+	if isUserIsOrgOwner(currentUser.ID, organizationToUpdateModel) {
+		if err = validateUpdateOrganization(organizationMetadata); err != nil {
+			return Dto.Organization{}, err
+		}
+
+		updatedFields := make(map[string]interface{})
+
+		if organizationMetadata.Email != nil {
+			updatedFields["email"] = strings.TrimSpace(*organizationMetadata.Email)
+		}
+
+		if organizationMetadata.InvoiceEmail != nil {
+			updatedFields["invoice_email"] = *organizationMetadata.InvoiceEmail
+		}
+
+		if organizationMetadata.InvoiceEmailAddress != nil {
+			updatedFields["invoice_email_address"] = *organizationMetadata.InvoiceEmailAddress
+		}
+
+		if organizationMetadata.TagExpirationS != nil {
+			updatedFields["removed_tag_expiration_s"] = *organizationMetadata.TagExpirationS
+		}
+
+		if err = Repositories.UpdateOrganizationFieldsById(organizationToUpdateModel.ID, updatedFields); err != nil {
+			return Dto.Organization{}, err
+		}
+
+		organizationToUpdateModel, err = Repositories.GetOrganizationDetailsById(organizationToUpdateModel.ID)
+		if err != nil {
+			return Dto.Organization{}, err
+		}
+
+		updatedOrgDto := Common.ConvertUserModelToOrganizationDto(organizationToUpdateModel, currentUser.ID, currentUser.Scopes)
+		return updatedOrgDto, nil
+	}
+
+	return Dto.Organization{}, Errors.UserNotOrganizationOwner()
+}
+
+// <editor-fold desc="Private Methods">
+
 /*
 Validate organization metadata for creating a new organization. Rules:
 The organization name must:
@@ -118,3 +197,51 @@ func validateCreateOrganization(organizationMetadata Dto.CreateOrganization) err
 
 	return nil
 }
+
+func validateUpdateOrganization(organizationMetadata Dto.UpdateOrganization) error {
+	if organizationMetadata.Email != nil {
+		email := strings.TrimSpace(*organizationMetadata.Email)
+		if email == "" {
+			return Errors.OrganizationEmailInvalid()
+		}
+
+		if _, err := mail.ParseAddress(email); err != nil {
+			return Errors.OrganizationEmailInvalid()
+		}
+	}
+
+	if organizationMetadata.InvoiceEmailAddress != nil {
+		email := strings.TrimSpace(*organizationMetadata.InvoiceEmailAddress)
+		if email == "" {
+			return Errors.OrganizationEmailInvalid()
+		}
+
+		if _, err := mail.ParseAddress(email); err != nil {
+			return Errors.OrganizationEmailInvalid()
+		}
+	}
+
+	if organizationMetadata.TagExpirationS != nil && *organizationMetadata.TagExpirationS < 0 {
+		return Errors.OrganizationTagExpirationInvalid()
+	}
+
+	return nil
+}
+
+/*
+isUserIsOrgOwner checks if the user is on the 'owners' team of the organization
+*/
+func isUserIsOrgOwner(userId int, organization Models.User) bool {
+	for _, team := range organization.Teams {
+		if team.Name == "owners" || team.RoleId == 1 {
+			for _, member := range team.Members {
+				if member.UserId == userId {
+					return true
+				}
+			}
+		}
+	}
+	return false // the user isn't in 'owners'
+}
+
+// </editor-fold>

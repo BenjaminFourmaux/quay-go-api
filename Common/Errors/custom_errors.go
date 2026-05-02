@@ -108,3 +108,51 @@ func OrganizationNameInvalid() *ApiError {
 		},
 	}
 }
+
+func RequestBodyInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "invalid_request_body",
+				Message: "The request body is invalid",
+			},
+		},
+	}
+}
+
+func OrganizationEmailInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "organization_email_invalid",
+				Message: "Organization email is invalid",
+			},
+		},
+	}
+}
+
+func OrganizationTagExpirationInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "organization_tag_expiration_invalid",
+				Message: "Tag expiration must be greater than or equal to 0",
+			},
+		},
+	}
+}
+
+func UserNotOrganizationOwner() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusForbidden,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_not_organization_owner",
+				Message: "The user is not the owner of this organization",
+			},
+		},
+	}
+}

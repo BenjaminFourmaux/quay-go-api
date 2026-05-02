@@ -116,3 +116,59 @@ func CreateOrganizationWithOwnerTeamTransaction(organization Models.User, userId
 	}
 	return organization, nil
 }
+
+func DeleteOrganizationTransaction(orgId int) error {
+	err := Database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Get Organization's teams id
+		teamIdsSubQuery := tx.Model(&Models.Team{}).
+			Select("id").
+			Where("organization_id = ?", orgId)
+
+		// 2. Remove all team members linked to the organization's teams
+		if err := tx.Where("team_id IN (?)", teamIdsSubQuery).Delete(&Models.TeamMember{}).Error; err != nil {
+			return err
+		}
+
+		// 3. Remove all teams linked to the organization
+		if err := tx.Where("organization_id = ?", orgId).Delete(&Models.Team{}).Error; err != nil {
+			return err
+		}
+
+		// 4. Remove the organization itself
+		deleteResult := tx.Where("id = ?", orgId).
+			Where("organization = ?", true).
+			Delete(&Models.User{})
+
+		if deleteResult.Error != nil {
+			return deleteResult.Error
+		}
+
+		if deleteResult.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		return nil
+	})
+	return err
+}
+
+func UpdateOrganizationFieldsById(orgId int, fields map[string]interface{}) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	result := Database.DB.Model(&Models.User{}).
+		Where("id = ?", orgId).
+		Where("organization = ?", true).
+		Updates(fields)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}

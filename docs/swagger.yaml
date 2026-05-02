@@ -83,6 +83,17 @@ definitions:
       severity:
         type: string
     type: object
+  Dto.UpdateOrganization:
+    properties:
+      email:
+        type: string
+      invoice_email:
+        type: boolean
+      invoice_email_address:
+        type: string
+      tag_expiration_s:
+        type: integer
+    type: object
   Dto.UserLogin:
     properties:
       metadata: {}
@@ -344,6 +355,30 @@ paths:
       tags:
       - Organization
   /api/v1/organization/{orgname}:
+    delete:
+      description: Delete an organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an organization
+      tags:
+      - Organization
     get:
       description: Get details in an organization
       parameters:
@@ -368,6 +403,40 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get details in an organization
+      tags:
+      - Organization
+    patch:
+      consumes:
+      - application/json
+      description: Update organization details
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Organization details to change
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateOrganization'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Organization'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update organization details
       tags:
       - Organization
   /api/v1/users/me:
