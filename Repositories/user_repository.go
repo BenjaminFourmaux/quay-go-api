@@ -5,16 +5,12 @@ import (
 	"quay-go-api/Entities/Models"
 )
 
-func SelectUserById(userId int) (Models.User, error) {
+func GetUserById(userId int) (Models.User, error) {
 	var user Models.User
 
 	err := Database.DB.First(&user, userId).Error
 
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
+	return user, err
 }
 
 /*
@@ -29,9 +25,13 @@ func GetUserByIdWithUserInformation(userId int) (Models.User, error) {
 		First(&user, userId).
 		Error
 
-	if err != nil {
-		return user, err
-	}
+	return user, err
+}
 
-	return user, nil
+func GetUserOrOrganizationByName(organizationName string) (Models.User, error) {
+	var user Models.User
+
+	err := Database.DB.Where("name = ?", organizationName).First(&user).Error
+
+	return user, err
 }

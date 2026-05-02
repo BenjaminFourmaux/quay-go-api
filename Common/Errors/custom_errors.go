@@ -84,3 +84,27 @@ func OrganizationNotFound(orgName string) *ApiError {
 		},
 	}
 }
+
+func UserOrOrganizationAlreadyExists() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusConflict,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_or_organization_already_exists",
+				Message: "A user or organization with this name already exists",
+			},
+		},
+	}
+}
+
+func OrganizationNameInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "organization_name_invalid",
+				Message: "Organization name is invalid. Must be alphanumeric, all lowercase, at least 2 characters long and at most 255 characters long",
+			},
+		},
+	}
+}

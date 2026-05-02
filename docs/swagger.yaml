@@ -19,6 +19,11 @@ definitions:
       severity:
         type: string
     type: object
+  Dto.CreateOrganization:
+    properties:
+      name:
+        type: string
+    type: object
   Dto.Message:
     properties:
       content:
@@ -34,8 +39,6 @@ definitions:
     properties:
       avatar:
         $ref: '#/definitions/Dto.Avatar'
-      email:
-        type: string
       invoice_email:
         type: boolean
       invoice_email_address:
@@ -66,11 +69,10 @@ definitions:
       is_synced:
         type: boolean
       members_count:
+        description: RepoCount    int    `json:"repo_count"` // Useless?
         type: integer
       name:
         type: string
-      repo_count:
-        type: integer
       role:
         type: string
     type: object
@@ -310,6 +312,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List user's organizations
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization
+      parameters:
+      - description: Organization metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateOrganization'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Organization'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new organization
       tags:
       - Organization
   /api/v1/organization/{orgname}:

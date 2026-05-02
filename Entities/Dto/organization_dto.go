@@ -22,3 +22,10 @@ type UserOrganization struct {
 	IsOrgAdmin         bool   `json:"is_org_admin"`
 	PreferredNamespace bool   `json:"preferred_namespace"`
 }
+
+/*
+CreateOrganization Input type for create a new organization
+*/
+type CreateOrganization struct {
+	Name string `json:"name"`
+}

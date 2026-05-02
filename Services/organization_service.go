@@ -7,12 +7,11 @@ import (
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
-	"quay-go-api/Services/Avatar"
 )
 
 func GetUserOrganizations(userId int, userScopes []Auth.Scope) ([]Dto.UserOrganization, error) {
 	// Get the current user
-	currentUser, err := Repositories.SelectUserById(userId)
+	currentUser, err := Repositories.GetUserById(userId)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -37,9 +36,47 @@ func GetUserOrganizations(userId int, userScopes []Auth.Scope) ([]Dto.UserOrgani
 	return organizations, nil
 }
 
+func CreateOrganization(organizationMetadata Dto.CreateOrganization, userId int, userScopes []Auth.Scope) (Dto.Organization, error) {
+	// TODO: check if user has role to create org and check Features flag (not implement yet)
+
+	// Check if the org (or a user) already exists
+	existingOrg, err := Repositories.GetUserOrOrganizationByName(organizationMetadata.Name)
+	if err == nil && existingOrg.Username == organizationMetadata.Name {
+		return Dto.Organization{}, Errors.UserOrOrganizationAlreadyExists()
+	}
+
+	// validating org
+	err = validateCreateOrganization(organizationMetadata)
+	if err != nil {
+		return Dto.Organization{}, err
+	}
+
+	// Convert dto to user model
+	var createOrgModel = Models.User{
+		Username:     organizationMetadata.Name,
+		Organization: true,
+	}
+
+	createdOrgModel, err := Repositories.CreateOrganizationWithOwnerTeamTransaction(createOrgModel, userId)
+	if err != nil {
+		return Dto.Organization{}, err
+	}
+
+	// Get the new org with details
+	createdOrgModel, err = Repositories.GetOrganizationDetailsById(createdOrgModel.ID)
+	if err != nil {
+		return Dto.Organization{}, err
+	}
+
+	// Convert model to dto
+	createdOrgDto := Common.ConvertUserModelToOrganizationDto(createdOrgModel, userId, userScopes)
+
+	return createdOrgDto, nil
+}
+
 func GetOrganizationDetailsByName(orgName string, userId int, userScopes []Auth.Scope) (Dto.Organization, error) {
 	// Get the current user
-	currentUser, err := Repositories.SelectUserById(userId)
+	currentUser, err := Repositories.GetUserById(userId)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -60,73 +97,36 @@ func GetOrganizationDetailsByName(orgName string, userId int, userScopes []Auth.
 		}
 	}
 
-	var teamsDto []Dto.Team
-
-	// check if the current user is member of the organization (is in a team of the organization) and get his team role
-	var userIsOrgAdmin bool = false
-	var userIsOrgMember bool = false
-
-	// If the user has scope super:user
-	if Common.HasScope(userScopes, Auth.SuperUser) {
-		userIsOrgAdmin = true
-	}
-
-	for _, orgTeam := range orgModel.Teams {
-		for _, teamMember := range orgTeam.Members {
-			if teamMember.User.ID == currentUser.ID {
-				userIsOrgMember = true
-
-				// Check if the user's team is the onwer team (team with role 'owner')
-				if orgTeam.Role.Name == "owner" {
-					userIsOrgAdmin = true
-				}
-			}
-		}
-
-		teamsDto = append(teamsDto, Dto.Team{
-			Name:         orgTeam.Name,
-			Description:  orgTeam.Description,
-			Role:         orgTeam.Role.Name,
-			Avatar:       Avatar.GetAvatarForTeam(orgTeam),
-			CanView:      canViewTeams(userId, orgTeam, userScopes),
-			MembersCount: len(orgTeam.Members),
-			IsSynced:     false, // TODO: get if the team is synced
-		})
-	}
-
-	orgDetailDto := Dto.Organization{
-		Name:                orgModel.Username,
-		Avatar:              Avatar.GetAvatarForOrg(orgModel),
-		IsAdmin:             userIsOrgAdmin,
-		IsMember:            userIsOrgMember,
-		Teams:               teamsDto,
-		InvoiceEmail:        orgModel.InvoiceEmail,
-		InvoiceEmailAddress: Dto.NullString(orgModel.InvoiceEmailAddress),
-		TagExpirationS:      orgModel.RemovedTagExpirationS,
-		IsFreeAccount:       !orgModel.StripeId.Valid || orgModel.StripeId.String == "",
-	}
+	orgDetailDto := Common.ConvertUserModelToOrganizationDto(orgModel, currentUser.ID, userScopes)
 
 	return orgDetailDto, nil
 }
 
 /*
-canViewTeams checks if the user can view the team
-A user can view a team if:
-1. They are a member of that team (any role)
-2. They are the scope org:admin
+Validate organization metadata for creating a new organization. Rules:
+The organization name must:
+1. Not be empty
+2. Be between 2 and 255 characters long
+3. Contain only alphanumeric characters, dashes, or underscores
 */
-func canViewTeams(userId int, team Models.Team, userScopes []Auth.Scope) bool {
-	if team.Members == nil {
-		panic("team members should be preloaded")
+func validateCreateOrganization(organizationMetadata Dto.CreateOrganization) error {
+	// Validate org name
+	// 1. empty value
+	if organizationMetadata.Name == "" {
+		return Errors.OrganizationNameInvalid()
 	}
 
-	if Auth.Can(Auth.OrgAdmin, userScopes) {
-		return true
+	// 2. value length
+	if len(organizationMetadata.Name) < 2 || len(organizationMetadata.Name) > 255 {
+		return Errors.OrganizationNameInvalid()
 	}
-	for _, teamMember := range team.Members {
-		if teamMember.UserId == userId {
-			return true
+
+	// 3. valid characters (alphanumeric, dash and underscore)
+	for _, char := range organizationMetadata.Name {
+		if !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '-' && char != '_' {
+			return Errors.OrganizationNameInvalid()
 		}
 	}
-	return false
+
+	return nil
 }

@@ -226,6 +226,52 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Create a new organization",
+                "parameters": [
+                    {
+                        "description": "Organization metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreateOrganization"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Organization"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/organization/{orgname}": {
@@ -354,6 +400,14 @@ const docTemplate = `{
                 }
             }
         },
+        "Dto.CreateOrganization": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "Dto.Message": {
             "type": "object",
             "properties": {
@@ -376,9 +430,6 @@ const docTemplate = `{
             "properties": {
                 "avatar": {
                     "$ref": "#/definitions/Dto.Avatar"
-                },
-                "email": {
-                    "type": "string"
                 },
                 "invoice_email": {
                     "type": "boolean"
@@ -425,13 +476,11 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "members_count": {
+                    "description": "RepoCount    int    ` + "`" + `json:\"repo_count\"` + "`" + ` // Useless?",
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
-                },
-                "repo_count": {
-                    "type": "integer"
                 },
                 "role": {
                     "type": "string"
