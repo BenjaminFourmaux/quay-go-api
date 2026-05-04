@@ -5,6 +5,8 @@ import (
 	"quay-go-api/Services/Auth"
 )
 
+// <editor-fold desc="Common Errors">
+
 func Unauthorized() *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusUnauthorized,
@@ -12,6 +14,18 @@ func Unauthorized() *ApiError {
 			Error: ErrorDetails{
 				Code:    "unauthorized",
 				Message: "You cannot perform this action because your haven't provided a authentication token",
+			},
+		},
+	}
+}
+
+func UnauthorizedInsufficientRole() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusForbidden,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "insufficient_role",
+				Message: "You cannot perform this action because your haven't correct role",
 			},
 		},
 	}
@@ -49,6 +63,22 @@ func ForbiddenNoRequiredScope(scopes []Auth.Scope) *ApiError {
 	}
 }
 
+func CurrentUserNotFound() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "current_user_not_found",
+				Message: "The current user does not exist",
+			},
+		},
+	}
+}
+
+// </editor-fold>
+
+// <editor-fold desc="Message Errors">
+
 func MessageInvalidSeverity(wrongSeverity string) *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusBadRequest,
@@ -61,17 +91,9 @@ func MessageInvalidSeverity(wrongSeverity string) *ApiError {
 	}
 }
 
-func CurrentUserNotFound() *ApiError {
-	return &ApiError{
-		StatusCode: http.StatusNotFound,
-		Err: ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "current_user_not_found",
-				Message: "The current user does not exist",
-			},
-		},
-	}
-}
+// </editor-fold>
+
+// <editor-fold desc="Organization Errors">
 
 func OrganizationNotFound(orgName string) *ApiError {
 	return &ApiError{
@@ -156,3 +178,5 @@ func UserNotOrganizationOwner() *ApiError {
 		},
 	}
 }
+
+// </editor-fold>

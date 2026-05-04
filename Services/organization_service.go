@@ -8,6 +8,7 @@ import (
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
+	"quay-go-api/Services/Avatar"
 	"strings"
 )
 
@@ -165,6 +166,68 @@ func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganizat
 	}
 
 	return Dto.Organization{}, Errors.UserNotOrganizationOwner()
+}
+
+func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUser) ([]Dto.OrganizationMember, error) {
+	// Check if the organization exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return nil, Errors.OrganizationNotFound(orgName)
+		default:
+			return nil, err
+		}
+	}
+
+	// Chek if user has the right to see members
+	if !Common.HasScope(currentUser.Scopes, Auth.OrgAdmin) &&
+		!Common.HasScope(currentUser.Scopes, Auth.SuperUser) &&
+		!isUserIsOrgOwner(currentUser.ID, organizationModel) {
+		return nil, Errors.UnauthorizedInsufficientRole()
+	}
+
+	membersByUserId := make(map[int]*Dto.OrganizationMember)
+	memberOrder := make([]int, 0)
+
+	for _, team := range organizationModel.Teams {
+		for _, teamMember := range team.Members {
+			user := teamMember.User
+			member, exists := membersByUserId[user.ID]
+			if !exists {
+				avatar := Avatar.GetAvatarForUser(user)
+				member = &Dto.OrganizationMember{
+					Name:         user.Username,
+					Kind:         "user",
+					Avatar:       avatar,
+					Teams:        []string{},
+					Repositories: []string{},
+				}
+				membersByUserId[user.ID] = member
+				memberOrder = append(memberOrder, user.ID)
+			}
+
+			alreadyInTeam := false
+			for _, existingTeamName := range member.Teams {
+				if existingTeamName == team.Name {
+					alreadyInTeam = true
+					break
+				}
+			}
+
+			if !alreadyInTeam {
+				member.Teams = append(member.Teams, team.Name)
+			}
+		}
+	}
+
+	members := make([]Dto.OrganizationMember, 0, len(memberOrder))
+	for _, userId := range memberOrder {
+		members = append(members, *membersByUserId[userId])
+	}
+
+	return members, nil
+
 }
 
 // <editor-fold desc="Private Methods">

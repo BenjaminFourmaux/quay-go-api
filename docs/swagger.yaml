@@ -58,6 +58,25 @@ definitions:
           $ref: '#/definitions/Dto.Team'
         type: array
     type: object
+  Dto.OrganizationMember:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      kind:
+        type: string
+      name:
+        type: string
+      repositories:
+        description: List of member's repository name
+        items:
+          type: string
+        type: array
+      teams:
+        description: List of member's team name
+        items:
+          type: string
+        type: array
+    type: object
   Dto.Team:
     properties:
       avatar:
@@ -437,6 +456,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update organization details
+      tags:
+      - Organization
+  /api/v1/organization/{orgname}/members:
+    get:
+      description: List all members of the organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.OrganizationMember'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List all members of the organization
       tags:
       - Organization
   /api/v1/users/me:

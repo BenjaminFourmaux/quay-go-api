@@ -18,6 +18,12 @@ func organizationController() {
 		organization.GET("/:orgname", getOrganizationDetails)
 		organization.DELETE("/:orgname", deleteOrganization)
 		organization.PATCH("/:orgname", updateOrganization)
+
+		members := organization.Group("/:orgname/members")
+		{
+			members.Use(authorizedMiddleware)
+			members.GET("/", listOrganizationMembers)
+		}
 	}
 }
 
@@ -163,4 +169,31 @@ func updateOrganization(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, updatedOrganization)
+}
+
+// listOrganizationMembers List all members of the organization
+// @Description List all members of the organization
+// @Summary List all members of the organization
+// @Tags Organization
+// @Param orgname path string true "Name of the organization"
+// @Success 200 {object} []Dto.OrganizationMember
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/members [get]
+func listOrganizationMembers(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+
+	listMembers, err := Services.ListMembersOfOrganization(orgname, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(200, listMembers)
 }
