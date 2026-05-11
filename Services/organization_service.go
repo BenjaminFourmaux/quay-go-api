@@ -231,6 +231,19 @@ func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUse
 }
 
 func ListTeamsOfOrganization(orgName string, filters map[string]string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
+	// Validating filters
+	var filterRole string
+	var filterName string
+	if role, ok := filters["role"]; ok {
+		if validatedRole := validateRole(role); !validatedRole {
+			return nil, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
+		}
+		filterRole = role
+	}
+	if name, ok := filters["name"]; ok {
+		filterName = name
+	}
+
 	// Retrieve organization and check if exists
 	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
 	if err != nil {
@@ -252,18 +265,8 @@ func ListTeamsOfOrganization(orgName string, filters map[string]string, currentU
 	teams := []Dto.Team{}
 	for _, team := range organizationModel.Teams {
 		// Apply filters
-		if filters != nil {
-			if filterName, ok := filters["name"]; ok && filterName != team.Name {
-				continue
-			}
-			if filterRole, ok := filters["role"]; ok {
-				if validatedRole := validateRole(filterRole); !validatedRole {
-					return nil, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
-				}
-				if filterRole != team.Role.Name {
-					continue
-				}
-			}
+		if (filterRole != "" && team.Role.Name != filterRole) || (filterName != "" && team.Name != filterRole) {
+			continue
 		}
 
 		teams = append(teams, Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes))
