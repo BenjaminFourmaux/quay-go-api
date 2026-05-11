@@ -3,6 +3,7 @@ package Errors
 import (
 	"net/http"
 	"quay-go-api/Services/Auth"
+	"strings"
 )
 
 // <editor-fold desc="Common Errors">
@@ -58,6 +59,23 @@ func ForbiddenNoRequiredScope(scopes []Auth.Scope) *ApiError {
 			Error: ErrorDetails{
 				Code:    "insufficient_scope",
 				Message: "you do not have the required permissions (" + missingScopes + ")to access this resource",
+			},
+		},
+	}
+}
+
+func InvalidParameterValue(paramName string, allowedValues []string) *ApiError {
+	quotedValues := make([]string, len(allowedValues))
+	for i, val := range allowedValues {
+		quotedValues[i] = "'" + val + "'"
+	}
+
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "invalid_parameter_value",
+				Message: "The provided parameter '" + paramName + "' has an invalid value. Allowed values: " + strings.Join(quotedValues, ", "),
 			},
 		},
 	}

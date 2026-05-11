@@ -489,12 +489,20 @@ paths:
       - Organization
   /api/v1/organization/{orgname}/teams:
     get:
-      description: List organization's teams
+      description: List organization's teams with optional filtering
       parameters:
       - description: Name of the organization
         in: path
         name: orgname
         required: true
+        type: string
+      - description: Filter teams by role name (e.g., 'admin', 'creator', 'member')
+        in: query
+        name: role
+        type: string
+      - description: Filter teams by name
+        in: query
+        name: name
         type: string
       responses:
         "200":

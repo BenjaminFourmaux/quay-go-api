@@ -461,7 +461,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "List organization's teams",
+                "description": "List organization's teams with optional filtering",
                 "tags": [
                     "Organization"
                 ],
@@ -473,6 +473,18 @@ const docTemplate = `{
                         "name": "orgname",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter teams by role name (e.g., 'admin', 'creator', 'member')",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter teams by name",
+                        "name": "name",
+                        "in": "query"
                     }
                 ],
                 "responses": {

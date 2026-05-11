@@ -230,7 +230,7 @@ func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUse
 
 }
 
-func ListTeamsOfOrganization(orgName string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
+func ListTeamsOfOrganization(orgName string, filters map[string]string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
 	// Retrieve organization and check if exists
 	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
 	if err != nil {
@@ -242,15 +242,30 @@ func ListTeamsOfOrganization(orgName string, currentUser Auth.AuthenticatedUser)
 		}
 	}
 
-	// Chek if user has the right to see members
+	// Check if user has the right to see teams
 	if !Common.HasScope(currentUser.Scopes, Auth.OrgAdmin) &&
 		!Common.HasScope(currentUser.Scopes, Auth.SuperUser) &&
 		!isUserIsOrgOwner(currentUser.ID, organizationModel) {
 		return nil, Errors.UnauthorizedInsufficientRole()
 	}
 
-	var teams []Dto.Team
+	teams := []Dto.Team{}
 	for _, team := range organizationModel.Teams {
+		// Apply filters
+		if filters != nil {
+			if filterName, ok := filters["name"]; ok && filterName != team.Name {
+				continue
+			}
+			if filterRole, ok := filters["role"]; ok {
+				if validatedRole := validateRole(filterRole); !validatedRole {
+					return nil, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
+				}
+				if filterRole != team.Role.Name {
+					continue
+				}
+			}
+		}
+
 		teams = append(teams, Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes))
 	}
 	return teams, nil
@@ -331,6 +346,13 @@ func isUserIsOrgOwner(userId int, organization Models.User) bool {
 		}
 	}
 	return false // the user isn't in 'owners'
+}
+
+/*
+validateRole cheks if the role is valid (e.g., "owners", "admin", "member")
+*/
+func validateRole(role string) bool {
+	return role == "admin" || role == "creator" || role == "member"
 }
 
 // </editor-fold>

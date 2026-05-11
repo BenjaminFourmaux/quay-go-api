@@ -199,10 +199,12 @@ func listOrganizationMembers(c *gin.Context) {
 }
 
 // listOrganizationTeams List organization's teams
-// @Description List organization's teams
+// @Description List organization's teams with optional filtering
 // @Summary List organization's teams
 // @Tags Organization
 // @Param orgname path string true "Name of the organization"
+// @Param role query string false "Filter teams by role name (e.g., 'admin', 'creator', 'member')"
+// @Param name query string false "Filter teams by name"
 // @Success 200 {object} []Dto.Team
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
@@ -217,7 +219,10 @@ func listOrganizationTeams(c *gin.Context) {
 
 	orgname := c.Param("orgname")
 
-	listTeams, err := Services.ListTeamsOfOrganization(orgname, currentUser)
+	// Get filters from query params
+	filters := extractFilters(c)
+
+	listTeams, err := Services.ListTeamsOfOrganization(orgname, filters, currentUser)
 	if err != nil {
 		throwError(c, err)
 		return

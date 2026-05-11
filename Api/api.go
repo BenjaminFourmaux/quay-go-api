@@ -152,6 +152,15 @@ func convertInputParamType[T any](input string, paramName string) (T, error) {
 	return zeroValue, nil
 }
 
+func extractFilters(c *gin.Context) map[string]string {
+	queryParams := c.Request.URL.Query()
+	queryParamMap := make(map[string]string)
+	for key, value := range queryParams {
+		queryParamMap[key] = value[0]
+	}
+	return queryParamMap
+}
+
 /*
 throwError return prettier JSON errors
 */
