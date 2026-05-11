@@ -15,12 +15,12 @@ func HasScope(scopes []Auth.Scope, scope Auth.Scope) bool {
 }
 
 /*
-canViewTeams checks if the user can view the team
+CanViewTeams checks if the user can view the team
 A user can view a team if:
 1. They are a member of that team (any role)
 2. They are the scope org:admin
 */
-func canViewTeams(userId int, team Models.Team, userScopes []Auth.Scope) bool {
+func CanViewTeams(userId int, team Models.Team, userScopes []Auth.Scope) bool {
 	if team.Members == nil {
 		panic("team members should be preloaded")
 	}

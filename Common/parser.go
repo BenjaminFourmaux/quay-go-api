@@ -59,15 +59,7 @@ func ConvertUserModelToOrganizationDto(orgDetailsModel Models.User, currentUserI
 			}
 		}
 
-		teamsDto = append(teamsDto, Dto.Team{
-			Name:         orgTeam.Name,
-			Description:  orgTeam.Description,
-			Role:         orgTeam.Role.Name,
-			Avatar:       Avatar.GetAvatarForTeam(orgTeam),
-			CanView:      canViewTeams(currentUserId, orgTeam, userScopes),
-			MembersCount: len(orgTeam.Members),
-			IsSynced:     false, // TODO: get if the team is synced
-		})
+		teamsDto = append(teamsDto, ConvertTeamModelToDto(orgTeam, currentUserId, userScopes))
 	}
 
 	orgDetailDto := Dto.Organization{
@@ -83,4 +75,16 @@ func ConvertUserModelToOrganizationDto(orgDetailsModel Models.User, currentUserI
 	}
 
 	return orgDetailDto
+}
+
+func ConvertTeamModelToDto(teamModel Models.Team, userId int, userScopes []Auth.Scope) Dto.Team {
+	return Dto.Team{
+		Name:         teamModel.Name,
+		Description:  teamModel.Description,
+		Role:         teamModel.Role.Name,
+		Avatar:       Avatar.GetAvatarForTeam(teamModel),
+		CanView:      CanViewTeams(userId, teamModel, userScopes),
+		MembersCount: len(teamModel.Members),
+		IsSynced:     false, // TODO: get if the team is synced
+	}
 }

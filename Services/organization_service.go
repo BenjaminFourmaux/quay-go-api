@@ -77,7 +77,7 @@ func CreateOrganization(organizationMetadata Dto.CreateOrganization, currentUser
 }
 
 func GetOrganizationDetailsByName(orgName string, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
-	// Get the organization with details
+	// Retrieve organization and check if exists
 	orgModel, err := Repositories.GetOrganizationDetailsByName(orgName)
 	if err != nil {
 		switch err.Error() {
@@ -169,7 +169,7 @@ func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganizat
 }
 
 func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUser) ([]Dto.OrganizationMember, error) {
-	// Check if the organization exists
+	// Retrieve organization and check if exists
 	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
 	if err != nil {
 		switch err.Error() {
@@ -228,6 +228,32 @@ func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUse
 
 	return members, nil
 
+}
+
+func ListTeamsOfOrganization(orgName string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
+	// Retrieve organization and check if exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return nil, Errors.OrganizationNotFound(orgName)
+		default:
+			return nil, err
+		}
+	}
+
+	// Chek if user has the right to see members
+	if !Common.HasScope(currentUser.Scopes, Auth.OrgAdmin) &&
+		!Common.HasScope(currentUser.Scopes, Auth.SuperUser) &&
+		!isUserIsOrgOwner(currentUser.ID, organizationModel) {
+		return nil, Errors.UnauthorizedInsufficientRole()
+	}
+
+	var teams []Dto.Team
+	for _, team := range organizationModel.Teams {
+		teams = append(teams, Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes))
+	}
+	return teams, nil
 }
 
 // <editor-fold desc="Private Methods">
