@@ -1,7 +1,6 @@
 package Services
 
 import (
-	"net/mail"
 	"quay-go-api/Common"
 	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
@@ -77,7 +76,7 @@ func CreateOrganization(organizationMetadata Dto.CreateOrganization, currentUser
 	}
 
 	// validating org
-	err = validateCreateOrganization(organizationMetadata)
+	err = Common.ValidateCreateOrganization(organizationMetadata)
 	if err != nil {
 		return Dto.Organization{}, err
 	}
@@ -159,7 +158,7 @@ func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganizat
 
 	// If the user is owners of the organization so it can update this
 	if isUserIsOrgOwner(currentUser.ID, organizationToUpdateModel) {
-		if err = validateUpdateOrganization(organizationMetadata); err != nil {
+		if err = Common.ValidateUpdateOrganization(organizationMetadata); err != nil {
 			return Dto.Organization{}, err
 		}
 
@@ -259,110 +258,7 @@ func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUse
 
 }
 
-func ListTeamsOfOrganization(orgName string, filters map[string]string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
-	// Validating filters
-	var filterRole string
-	var filterName string
-	if role, ok := filters["role"]; ok {
-		if validatedRole := validateRole(role); !validatedRole {
-			return nil, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
-		}
-		filterRole = role
-	}
-	if name, ok := filters["name"]; ok {
-		filterName = name
-	}
-
-	// Retrieve organization and check if exists
-	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
-	if err != nil {
-		switch err.Error() {
-		case "record not found":
-			return nil, Errors.OrganizationNotFound(orgName)
-		default:
-			return nil, err
-		}
-	}
-
-	// Check if user has the right to see teams
-	if !Common.HasScope(currentUser.Scopes, Auth.OrgAdmin) &&
-		!Common.HasScope(currentUser.Scopes, Auth.SuperUser) &&
-		!isUserIsOrgOwner(currentUser.ID, organizationModel) {
-		return nil, Errors.UnauthorizedInsufficientRole()
-	}
-
-	teams := []Dto.Team{}
-	for _, team := range organizationModel.Teams {
-		// Apply filters
-		if (filterRole != "" && team.Role.Name != filterRole) || (filterName != "" && team.Name != filterName) {
-			continue
-		}
-
-		teams = append(teams, Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes))
-	}
-	return teams, nil
-}
-
 // <editor-fold desc="Private Methods">
-
-/*
-Validate organization metadata for creating a new organization. Rules:
-The organization name must:
-1. Not be empty
-2. Be between 2 and 255 characters long
-3. Contain only alphanumeric characters, dashes, or underscores
-*/
-func validateCreateOrganization(organizationMetadata Dto.CreateOrganization) error {
-	// Validate org name
-	// 1. empty value
-	if organizationMetadata.Name == "" {
-		return Errors.OrganizationNameInvalid()
-	}
-
-	// 2. value length
-	if len(organizationMetadata.Name) < 2 || len(organizationMetadata.Name) > 255 {
-		return Errors.OrganizationNameInvalid()
-	}
-
-	// 3. valid characters (alphanumeric, dash and underscore)
-	for _, char := range organizationMetadata.Name {
-		if !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '-' && char != '_' {
-			return Errors.OrganizationNameInvalid()
-		}
-	}
-
-	return nil
-}
-
-func validateUpdateOrganization(organizationMetadata Dto.UpdateOrganization) error {
-	if organizationMetadata.Email != nil {
-		email := strings.TrimSpace(*organizationMetadata.Email)
-		if email == "" {
-			return Errors.OrganizationEmailInvalid()
-		}
-
-		if _, err := mail.ParseAddress(email); err != nil {
-			return Errors.OrganizationEmailInvalid()
-		}
-	}
-
-	if organizationMetadata.InvoiceEmailAddress != nil {
-		email := strings.TrimSpace(*organizationMetadata.InvoiceEmailAddress)
-		if email == "" {
-			return Errors.OrganizationEmailInvalid()
-		}
-
-		if _, err := mail.ParseAddress(email); err != nil {
-			return Errors.OrganizationEmailInvalid()
-		}
-	}
-
-	if organizationMetadata.TagExpirationS != nil && *organizationMetadata.TagExpirationS < 0 {
-		return Errors.OrganizationTagExpirationInvalid()
-	}
-
-	return nil
-}
 
 /*
 isUserIsOrgOwner checks if the user is on the 'owners' team of the organization
@@ -378,13 +274,6 @@ func isUserIsOrgOwner(userId int, organization Models.User) bool {
 		}
 	}
 	return false // the user isn't in 'owners'
-}
-
-/*
-validateRole cheks if the role is valid (e.g., "owners", "admin", "member")
-*/
-func validateRole(role string) bool {
-	return role == "admin" || role == "creator" || role == "member"
 }
 
 // </editor-fold>

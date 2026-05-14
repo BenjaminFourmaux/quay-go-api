@@ -24,6 +24,16 @@ definitions:
       name:
         type: string
     type: object
+  Dto.CreateTeam:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      role:
+        description: Name of the role ('admin', 'creator' or 'member'. Default 'member')
+        type: string
+    type: object
   Dto.Message:
     properties:
       content:
@@ -535,6 +545,40 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List organization's teams
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a team inside the organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Team to create
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateTeam'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a team inside the organization
       tags:
       - Organization
   /api/v1/users/me:

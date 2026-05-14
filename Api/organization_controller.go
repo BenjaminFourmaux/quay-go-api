@@ -24,6 +24,7 @@ func organizationController() {
 
 		// Teams
 		organization.GET("/:orgname/teams", listOrganizationTeams)
+		organization.POST("/:orgname/teams", createOrganizationTeam)
 	}
 }
 
@@ -234,4 +235,36 @@ func listOrganizationTeams(c *gin.Context) {
 		return
 	}
 	c.JSON(200, listTeams)
+}
+
+// createOrganizationTeam Create a team inside the organization
+// @Description Create a team inside the organization
+// @Summary Create a team inside the organization
+// @Tags Organization
+// @Accept json
+// @Param orgname path string true "Name of the organization"
+// @Param message body Dto.CreateTeam true "Team to create"
+// @Success 201 {object} Dto.Team
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/teams [post]
+func createOrganizationTeam(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+
+	var teamToCreate Dto.CreateTeam
+	_ = c.BindJSON(&teamToCreate)
+
+	newTeam, err := Services.CreateTeam(teamToCreate, orgname, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, newTeam)
 }

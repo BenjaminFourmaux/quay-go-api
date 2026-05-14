@@ -198,3 +198,43 @@ func UserNotOrganizationOwner() *ApiError {
 }
 
 // </editor-fold>
+
+// <editor-fold desc="Team Errors">
+
+func TeamNameRequired() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "team_name_required",
+				Message: "Team name is required",
+			},
+		},
+	}
+}
+
+func TeamNameInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "team_name_invalid",
+				Message: "Team name is invalid. Must be alphanumeric, all lowercase, at least 2 characters long and at most 255 characters long",
+			},
+		},
+	}
+}
+
+func TeamRoleInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "team_role_invalid",
+				Message: "Team role is invalid. Must be one of 'member', 'admin' or 'creator'",
+			},
+		},
+	}
+}
+
+// </editor-fold>

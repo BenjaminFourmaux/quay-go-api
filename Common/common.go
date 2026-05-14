@@ -21,12 +21,12 @@ A user can view a team if:
 2. They are the scope org:admin
 */
 func CanViewTeams(userId int, team Models.Team, userScopes []Auth.Scope) bool {
-	if team.Members == nil {
-		panic("team members should be preloaded")
-	}
-
 	if Auth.Can(Auth.OrgAdmin, userScopes) {
 		return true
+	}
+
+	if team.Members == nil {
+		panic("team members should be preloaded")
 	}
 	for _, teamMember := range team.Members {
 		if teamMember.UserId == userId {
