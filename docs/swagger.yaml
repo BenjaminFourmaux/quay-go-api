@@ -508,7 +508,7 @@ paths:
       summary: List organization's members
       tags:
       - Organization
-  /api/v1/organization/{orgname}/teams:
+  /api/v1/organization/{orgname}/team:
     get:
       description: List organization's teams with optional filtering
       parameters:
@@ -548,7 +548,7 @@ paths:
       - ApiKeyAuth: []
       summary: List organization's teams
       tags:
-      - Organization
+      - Team
     post:
       consumes:
       - application/json
@@ -582,8 +582,8 @@ paths:
       - ApiKeyAuth: []
       summary: Create a team inside the organization
       tags:
-      - Organization
-  /api/v1/organization/{orgname}/teams/{teamname}:
+      - Team
+  /api/v1/organization/{orgname}/team/{teamname}:
     delete:
       description: Delete a team
       parameters:
@@ -612,7 +612,7 @@ paths:
       - ApiKeyAuth: []
       summary: Delete a team
       tags:
-      - Organization
+      - Team
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information

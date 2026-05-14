@@ -40,6 +40,7 @@ func endpointsRegistration() {
 	messagesController()
 	usersController()
 	organizationController()
+	teamController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {

@@ -468,7 +468,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/{orgname}/teams": {
+        "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
                     {
@@ -477,7 +477,7 @@ const docTemplate = `{
                 ],
                 "description": "List organization's teams with optional filtering",
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "List organization's teams",
                 "parameters": [
@@ -542,7 +542,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "Create a team inside the organization",
                 "parameters": [
@@ -585,7 +585,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/{orgname}/teams/{teamname}": {
+        "/api/v1/organization/{orgname}/team/{teamname}": {
             "delete": {
                 "security": [
                     {
@@ -594,7 +594,7 @@ const docTemplate = `{
                 ],
                 "description": "Delete a team",
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "Delete a team",
                 "parameters": [

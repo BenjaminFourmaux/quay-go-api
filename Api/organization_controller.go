@@ -24,14 +24,6 @@ func organizationController() {
 		{
 			members.GET("/", listOrganizationMembers)
 		}
-
-		// Teams
-		teams := organization.Group("/:orgname/teams")
-		{
-			teams.GET("/", listOrganizationTeams)
-			teams.POST("/", createOrganizationTeam)
-			teams.DELETE("/:teamname", deleteOrganizationTeam)
-		}
 	}
 }
 
@@ -209,98 +201,4 @@ func listOrganizationMembers(c *gin.Context) {
 		return
 	}
 	c.JSON(200, listMembers)
-}
-
-// listOrganizationTeams List organization's teams
-// @Description List organization's teams with optional filtering
-// @Summary List organization's teams
-// @Tags Organization
-// @Param orgname path string true "Name of the organization"
-// @Param role query string false "Filter teams by role name (e.g., 'admin', 'creator', 'member')"
-// @Param name query string false "Filter teams by name"
-// @Success 200 {object} []Dto.Team
-// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
-// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
-// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
-// @Security ApiKeyAuth
-// @Router /api/v1/organization/{orgname}/teams [get]
-func listOrganizationTeams(c *gin.Context) {
-	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
-	if hasScopeErr != nil {
-		throwError(c, hasScopeErr)
-		return
-	}
-
-	orgname := c.Param("orgname")
-
-	// Get filters from query params
-	filters := extractFilters(c)
-
-	listTeams, err := Services.ListTeamsOfOrganization(orgname, filters, currentUser)
-	if err != nil {
-		throwError(c, err)
-		return
-	}
-	c.JSON(200, listTeams)
-}
-
-// createOrganizationTeam Create a team inside the organization
-// @Description Create a team inside the organization
-// @Summary Create a team inside the organization
-// @Tags Organization
-// @Accept json
-// @Param orgname path string true "Name of the organization"
-// @Param message body Dto.CreateTeam true "Team to create"
-// @Success 201 {object} Dto.Team
-// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
-// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
-// @Security ApiKeyAuth
-// @Router /api/v1/organization/{orgname}/teams [post]
-func createOrganizationTeam(c *gin.Context) {
-	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
-	if hasScopeErr != nil {
-		throwError(c, hasScopeErr)
-		return
-	}
-
-	orgname := c.Param("orgname")
-
-	var teamToCreate Dto.CreateTeam
-	_ = c.BindJSON(&teamToCreate)
-
-	newTeam, err := Services.CreateTeam(teamToCreate, orgname, currentUser)
-	if err != nil {
-		throwError(c, err)
-		return
-	}
-	c.JSON(http.StatusCreated, newTeam)
-}
-
-// deleteOrganizationTeam Delete a team
-// @Description Delete a team
-// @Summary Delete a team
-// @Tags Organization
-// @Param orgname path string true "Name of the organization"
-// @Param teamname path string true "Name of the team to delete"
-// @Success 204 "No Content"
-// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
-// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
-// @Security ApiKeyAuth
-// @Router /api/v1/organization/{orgname}/teams/{teamname} [delete]
-func deleteOrganizationTeam(c *gin.Context) {
-	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
-	if hasScopeErr != nil {
-		throwError(c, hasScopeErr)
-		return
-	}
-
-	orgname := c.Param("orgname")
-	teamname := c.Param("teamname")
-
-	err := Services.DeleteTeam(orgname, teamname, currentUser)
-	if err != nil {
-		throwError(c, err)
-		return
-	}
-	c.Status(http.StatusNoContent)
 }
