@@ -24,16 +24,13 @@ func usersController() {
 // @Security ApiKeyAuth
 // @Router /api/v1/users/me [get]
 func getCurrentUser(c *gin.Context) {
-	hasScopesErr := requiredScopes(c, []Auth.Scope{Auth.ReadUser})
-	if hasScopesErr != nil {
-		throwError(c, hasScopesErr)
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
 		return
 	}
 
-	userId, _ := c.Get("authenticatedUserId")
-	userScopes := Auth.ConvertListIdToScopes(c.GetString("scopes"))
-
-	userInfo, err := Services.GetMeInfo(userId.(int), userScopes)
+	userInfo, err := Services.GetMeInfo(currentUser)
 	if err != nil {
 		throwError(c, err)
 		return

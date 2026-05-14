@@ -1,13 +1,23 @@
 package Services
 
 import (
+	"quay-go-api/Common"
+	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
+	"quay-go-api/Services/Avatar"
 )
 
-func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) {
-	userModel := Repositories.GetUserByIdWithUserInformation(userId)
+func GetMeInfo(currentUser Auth.AuthenticatedUser) (Dto.UserMeResponse, error) {
+	userModel, err := Repositories.GetUserByIdWithUserInformation(currentUser.ID)
+	if err != nil {
+		return Dto.UserMeResponse{}, err
+	}
+	if userModel.ID == 0 {
+		customErr := Errors.CurrentUserNotFound()
+		return Dto.UserMeResponse{}, customErr
+	}
 
 	// Convert models to dto
 	userLogins := []Dto.UserLogin{}
@@ -24,26 +34,17 @@ func GetMeInfo(userId int, userScopes []Auth.Scope) (Dto.UserMeResponse, error) 
 		userPrompts = append(userPrompts, prompt.Kind.Name)
 	}
 
-	userOrgs := []Dto.Organization{}
-	if Auth.Can(Auth.ReadUser, userScopes) {
-		orgsModel, _ := Repositories.GetUserOrganizations(userModel.Username)
+	userOrgs := []Dto.UserOrganization{}
+	if Auth.Can(Auth.ReadUser, currentUser.Scopes) {
+		orgsModel, _ := Repositories.GetUserOrganizations(userModel.ID)
 
-		for _, org := range orgsModel {
-			userOrgs = append(userOrgs, Dto.Organization{
-				Name:               org.Username,
-				Avatar:             GetAvatarForOrg(org),
-				CanCreateRepo:      Auth.Can(Auth.CreateRepo, userScopes),
-				Public:             false, // TODO: check if the org name not in list of public Namespaces
-				IsOrgAdmin:         Auth.Can(Auth.OrgAdmin, userScopes),
-				PreferredNamespace: !(!userModel.StripeId.Valid || userModel.StripeId.String == ""),
-			})
-		}
+		userOrgs = Common.ConvertUserModelsToDto(orgsModel, userModel, currentUser.Scopes)
 	}
 
 	userDto := Dto.UserMeResponse{
 		Anonymous:           false,
 		Username:            userModel.Username,
-		Avatar:              GetAvatarForUser(userModel),
+		Avatar:              Avatar.GetAvatarForUser(userModel),
 		CanCreateRepo:       true,
 		IsMe:                true, // get me
 		Verified:            userModel.Verified,

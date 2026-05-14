@@ -19,6 +19,23 @@ definitions:
       severity:
         type: string
     type: object
+  Dto.CreateOrganization:
+    properties:
+      name:
+        type: string
+    type: object
+  Dto.CreateTeam:
+    properties:
+      description:
+        description: Description of the Team can be in Markdown format (optional)
+        type: string
+      name:
+        type: string
+      role:
+        description: Name of the role ('admin', 'creator' or 'member'. Optional. Default
+          'member')
+        type: string
+    type: object
   Dto.Message:
     properties:
       content:
@@ -34,16 +51,61 @@ definitions:
     properties:
       avatar:
         $ref: '#/definitions/Dto.Avatar'
-      can_create_repo:
+      invoice_email:
         type: boolean
-      is_org_admin:
+      invoice_email_address:
+        type: string
+      is_admin:
+        type: boolean
+      is_free_account:
+        type: boolean
+      is_member:
         type: boolean
       name:
         type: string
-      preferred_namespace:
+      tag_expiration_s:
+        type: integer
+      teams:
+        items:
+          $ref: '#/definitions/Dto.Team'
+        type: array
+    type: object
+  Dto.OrganizationMember:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      kind:
+        type: string
+      name:
+        type: string
+      repositories:
+        description: List of member's repository name
+        items:
+          type: string
+        type: array
+      teams:
+        description: List of member's team name
+        items:
+          type: string
+        type: array
+    type: object
+  Dto.Team:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_view:
         type: boolean
-      public:
+      description:
+        type: string
+      is_synced:
         type: boolean
+      members_count:
+        description: RepoCount    int    `json:"repo_count"` // Useless?
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
     type: object
   Dto.UpdateMessage:
     properties:
@@ -51,6 +113,17 @@ definitions:
         type: string
       severity:
         type: string
+    type: object
+  Dto.UpdateOrganization:
+    properties:
+      email:
+        type: string
+      invoice_email:
+        type: boolean
+      invoice_email_address:
+        type: string
+      tag_expiration_s:
+        type: integer
     type: object
   Dto.UserLogin:
     properties:
@@ -94,7 +167,7 @@ definitions:
         type: array
       organizations:
         items:
-          $ref: '#/definitions/Dto.Organization'
+          $ref: '#/definitions/Dto.UserOrganization'
         type: array
       preferred_namespace:
         type: boolean
@@ -110,6 +183,21 @@ definitions:
       username:
         type: string
       verified:
+        type: boolean
+    type: object
+  Dto.UserOrganization:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      can_create_repo:
+        type: boolean
+      is_org_admin:
+        type: boolean
+      name:
+        type: string
+      preferred_namespace:
+        type: boolean
+      public:
         type: boolean
     type: object
   Errors.ErrorDetails:
@@ -245,6 +333,286 @@ paths:
         on the quay web app for all user
       tags:
       - Messages
+  /api/v1/organization:
+    get:
+      description: List user's organizations
+      parameters:
+      - description: Filter organizations by public or private (true/false)
+        in: query
+        name: is_public
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.UserOrganization'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List user's organizations
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization
+      parameters:
+      - description: Organization metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateOrganization'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Organization'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new organization
+      tags:
+      - Organization
+  /api/v1/organization/{orgname}:
+    delete:
+      description: Delete an organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an organization
+      tags:
+      - Organization
+    get:
+      description: Get details in an organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Organization'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get details in an organization
+      tags:
+      - Organization
+    patch:
+      consumes:
+      - application/json
+      description: Update organization details
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Organization details to change
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateOrganization'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Organization'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update organization details
+      tags:
+      - Organization
+  /api/v1/organization/{orgname}/members:
+    get:
+      description: List organization's members
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.OrganizationMember'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List organization's members
+      tags:
+      - Organization
+  /api/v1/organization/{orgname}/teams:
+    get:
+      description: List organization's teams with optional filtering
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Filter teams by role name (e.g., 'admin', 'creator', 'member')
+        in: query
+        name: role
+        type: string
+      - description: Filter teams by name
+        in: query
+        name: name
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.Team'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List organization's teams
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a team inside the organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Team to create
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateTeam'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a team inside the organization
+      tags:
+      - Organization
+  /api/v1/organization/{orgname}/teams/{teamname}:
+    delete:
+      description: Delete a team
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team to delete
+        in: path
+        name: teamname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a team
+      tags:
+      - Organization
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information

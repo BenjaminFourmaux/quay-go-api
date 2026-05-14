@@ -1,6 +1,7 @@
 package Logger
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -32,7 +33,7 @@ func SetLevel(level Level) {
 	levelMu.Lock()
 	currentLevel = level
 	levelMu.Unlock()
-	println("Log level set to: " + levelToString(level))
+	fmt.Println("Log level set to: " + levelToString(level))
 }
 
 func GetLevel() Level {
@@ -94,7 +95,7 @@ func logAt(level Level, message string) {
 		return
 	}
 
-	println(getCurrentDatetime() + introducer + levelToString(level) + separator + message)
+	fmt.Println(getCurrentDatetime() + introducer + levelToString(level) + separator + message)
 }
 
 func Debug(message string) {
@@ -122,5 +123,5 @@ func Raise(err error) {
 }
 
 func Separator() {
-	println("----------------------------------")
+	fmt.Println("----------------------------------")
 }
