@@ -201,6 +201,30 @@ func UserNotOrganizationOwner() *ApiError {
 
 // <editor-fold desc="Team Errors">
 
+func TeamNotFound(teamName string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "team_not_found",
+				Message: "The team '" + teamName + "' does not exist",
+			},
+		},
+	}
+}
+
+func TeamAlreadyExists() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusConflict,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "team_already_exists",
+				Message: "A team with this name already exists",
+			},
+		},
+	}
+}
+
 func TeamNameRequired() *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusBadRequest,

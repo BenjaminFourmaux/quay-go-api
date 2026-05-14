@@ -20,11 +20,18 @@ func organizationController() {
 		organization.PATCH("/:orgname", updateOrganization)
 
 		// Members
-		organization.GET("/:orgname/members", listOrganizationMembers)
+		members := organization.Group("/:orgname/members")
+		{
+			members.GET("/", listOrganizationMembers)
+		}
 
 		// Teams
-		organization.GET("/:orgname/teams", listOrganizationTeams)
-		organization.POST("/:orgname/teams", createOrganizationTeam)
+		teams := organization.Group("/:orgname/teams")
+		{
+			teams.GET("/", listOrganizationTeams)
+			teams.POST("/", createOrganizationTeam)
+			teams.DELETE("/:teamname", deleteOrganizationTeam)
+		}
 	}
 }
 
@@ -267,4 +274,33 @@ func createOrganizationTeam(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newTeam)
+}
+
+// deleteOrganizationTeam Delete a team
+// @Description Delete a team
+// @Summary Delete a team
+// @Tags Organization
+// @Param orgname path string true "Name of the organization"
+// @Param teamname path string true "Name of the team to delete"
+// @Success 204 "No Content"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/teams/{teamname} [delete]
+func deleteOrganizationTeam(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	teamname := c.Param("teamname")
+
+	err := Services.DeleteTeam(orgname, teamname, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

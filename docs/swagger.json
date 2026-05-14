@@ -577,6 +577,53 @@
                 }
             }
         },
+        "/api/v1/organization/{orgname}/teams/{teamname}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a team",
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Delete a team",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the team to delete",
+                        "name": "teamname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -672,13 +719,14 @@
             "type": "object",
             "properties": {
                 "description": {
+                    "description": "Description of the Team can be in Markdown format (optional)",
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
                 "role": {
-                    "description": "Name of the role ('admin', 'creator' or 'member'. Default 'member')",
+                    "description": "Name of the role ('admin', 'creator' or 'member'. Optional. Default 'member')",
                     "type": "string"
                 }
             }

@@ -71,6 +71,13 @@ func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.Au
 		return Dto.Team{}, validateError
 	}
 
+	// Check if the team already exists
+	for _, team := range organizationModel.Teams {
+		if team.Name == *teamMetadata.Name {
+			return Dto.Team{}, Errors.TeamAlreadyExists()
+		}
+	}
+
 	// Convert dto to model
 	newTeam := Models.Team{
 		Name:           *teamMetadata.Name,
@@ -107,4 +114,37 @@ func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.Au
 	createdTeam.Role = *teamMetadata.Role
 
 	return createdTeam, nil
+}
+
+func DeleteTeam(orgName string, teamName string, currentUser Auth.AuthenticatedUser) error {
+	// Get the org (with detail, for user role checking) if exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Errors.OrganizationNotFound(orgName)
+		default:
+			return err
+		}
+	}
+
+	// If the user is owners of the organization so it can delete teams of this organization
+	if isUserIsOrgOwner(currentUser.ID, organizationModel) {
+		// Check if the organization's team exists
+		var teamIdToDelete int
+		for _, team := range organizationModel.Teams {
+			if team.Name == teamName {
+				teamIdToDelete = team.ID
+				break
+			} else {
+				return Errors.TeamNotFound(teamName)
+			}
+		}
+
+		err = Repositories.DeleteTeamTransaction(teamIdToDelete)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
