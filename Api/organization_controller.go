@@ -31,7 +31,9 @@ func organizationController() {
 // @Description List user's organizations
 // @Summary List user's organizations
 // @Tags Organization
+// @Param is_public query string false "Filter organizations by public or private (true/false)"
 // @Success 200 {object} []Dto.UserOrganization
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
@@ -43,7 +45,10 @@ func listOrganizations(c *gin.Context) {
 		return
 	}
 
-	organizations, err := Services.GetUserOrganizations(currentUser)
+	// Get filters from query params
+	filters := extractFilters(c)
+
+	organizations, err := Services.GetUserOrganizations(currentUser, filters)
 	if err != nil {
 		throwError(c, err)
 		return
@@ -206,6 +211,7 @@ func listOrganizationMembers(c *gin.Context) {
 // @Param role query string false "Filter teams by role name (e.g., 'admin', 'creator', 'member')"
 // @Param name query string false "Filter teams by name"
 // @Success 200 {object} []Dto.Team
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth

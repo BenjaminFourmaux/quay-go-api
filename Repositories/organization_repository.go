@@ -57,11 +57,11 @@ func GetUserOrganizations(userId int) ([]Models.User, error) {
 	organizations := []Models.User{} // Orgs are in table user
 
 	err := Database.DB.
-		Table("user AS organization_user").
+		Table("\"user\" AS organization_user").
 		Distinct("organization_user.*").
 		Joins("JOIN team ON team.organization_id = organization_user.id").
 		Joins("JOIN teammember ON teammember.team_id = team.id").
-		Joins("JOIN user AS member_user ON member_user.id = teammember.user_id").
+		Joins("JOIN \"user\" AS member_user ON member_user.id = teammember.user_id").
 		Where("organization_user.organization = ?", true).
 		Where("member_user.id = ?", userId).
 		Find(&organizations).Error

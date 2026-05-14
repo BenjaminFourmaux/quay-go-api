@@ -9,10 +9,22 @@ import (
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
 	"quay-go-api/Services/Avatar"
+	"slices"
+	"strconv"
 	"strings"
 )
 
-func GetUserOrganizations(currentUser Auth.AuthenticatedUser) ([]Dto.UserOrganization, error) {
+func GetUserOrganizations(currentUser Auth.AuthenticatedUser, filters map[string]string) ([]Dto.UserOrganization, error) {
+	// Validating filters
+	var filterPublic bool
+	if public, ok := filters["is_public"]; ok {
+		isPublic, err := strconv.ParseBool(public)
+		if err != nil {
+			return nil, Errors.InvalidParameterValue("is_public", []string{"true", "false"})
+		}
+		filterPublic = isPublic
+	}
+
 	user, err := Repositories.GetUserById(currentUser.ID)
 	if err != nil {
 		switch err.Error() {
@@ -35,6 +47,23 @@ func GetUserOrganizations(currentUser Auth.AuthenticatedUser) ([]Dto.UserOrganiz
 
 	// Convert userModel into UserOrganization Dto
 	organizations := Common.ConvertUserModelsToDto(orgsModel, user, currentUser.Scopes)
+
+	// Apply filters
+	if _, ok := filters["is_public"]; ok {
+		organizations = slices.Collect(func(yield func(Dto.UserOrganization) bool) {
+			for _, org := range organizations {
+				if org.Public == filterPublic {
+					if !yield(org) {
+						return
+					}
+				}
+			}
+		})
+		if organizations == nil {
+			return []Dto.UserOrganization{}, nil
+		}
+	}
+
 	return organizations, nil
 }
 

@@ -203,6 +203,14 @@ const docTemplate = `{
                     "Organization"
                 ],
                 "summary": "List user's organizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter organizations by public or private (true/false)",
+                        "name": "is_public",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -211,6 +219,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/Dto.UserOrganization"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -495,6 +509,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/Dto.Team"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
                         }
                     },
                     "401": {
