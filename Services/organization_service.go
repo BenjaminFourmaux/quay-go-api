@@ -265,7 +265,7 @@ func ListTeamsOfOrganization(orgName string, filters map[string]string, currentU
 	teams := []Dto.Team{}
 	for _, team := range organizationModel.Teams {
 		// Apply filters
-		if (filterRole != "" && team.Role.Name != filterRole) || (filterName != "" && team.Name != filterRole) {
+		if (filterRole != "" && team.Role.Name != filterRole) || (filterName != "" && team.Name != filterName) {
 			continue
 		}
 
