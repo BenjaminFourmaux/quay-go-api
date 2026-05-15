@@ -23,19 +23,23 @@ func messagesController() {
 // @Description List messages displayed on the quay web app for all user
 // @Summary List messages displayed on the quay web app for all user
 // @Tags Messages
+// @Param severity query string false "Filter message by severity (comma separated, accepted values: info, warning, error)"
 // @Success 200 {object} []Dto.Message
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/messages [get]
 func listMessages(c *gin.Context) {
-	hasScopesErr := requiredScopes(c, []Auth.Scope{Auth.AdminUser})
-	if hasScopesErr != nil {
-		throwError(c, hasScopesErr)
+	_, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
 		return
 	}
 
-	messages, err := Services.ListMessages()
+	// Get filters from query params
+	filters := extractFilters(c)
+
+	messages, err := Services.ListMessages(filters)
 	if err != nil {
 		throwError(c, err)
 		return

@@ -27,6 +27,14 @@ const docTemplate = `{
                     "Messages"
                 ],
                 "summary": "List messages displayed on the quay web app for all user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter message by severity (comma separated, accepted values: info, warning, error)",
+                        "name": "severity",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

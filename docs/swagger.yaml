@@ -223,6 +223,12 @@ paths:
   /api/v1/messages:
     get:
       description: List messages displayed on the quay web app for all user
+      parameters:
+      - description: 'Filter message by severity (comma separated, accepted values:
+          info, warning, error)'
+        in: query
+        name: severity
+        type: string
       responses:
         "200":
           description: OK
