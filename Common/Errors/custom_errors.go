@@ -93,6 +93,18 @@ func CurrentUserNotFound() *ApiError {
 	}
 }
 
+func RequestBodyInvalid() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "invalid_request_body",
+				Message: "The request body is invalid",
+			},
+		},
+	}
+}
+
 // </editor-fold>
 
 // <editor-fold desc="Message Errors">
@@ -144,18 +156,6 @@ func OrganizationNameInvalid() *ApiError {
 			Error: ErrorDetails{
 				Code:    "organization_name_invalid",
 				Message: "Organization name is invalid. Must be alphanumeric, all lowercase, at least 2 characters long and at most 255 characters long",
-			},
-		},
-	}
-}
-
-func RequestBodyInvalid() *ApiError {
-	return &ApiError{
-		StatusCode: http.StatusBadRequest,
-		Err: ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "invalid_request_body",
-				Message: "The request body is invalid",
 			},
 		},
 	}
