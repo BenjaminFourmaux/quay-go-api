@@ -620,6 +620,41 @@ paths:
       summary: Delete a team
       tags:
       - Team
+    get:
+      description: Get a team details
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a team details
+      tags:
+      - Team
     patch:
       consumes:
       - application/json

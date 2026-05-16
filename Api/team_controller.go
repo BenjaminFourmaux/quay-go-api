@@ -14,6 +14,7 @@ func teamController() {
 		teams.Use(authorizedMiddleware)
 		teams.GET("/", listOrganizationTeams)
 		teams.POST("/", createOrganizationTeam)
+		teams.GET("/:teamname", getOrganizationTeam)
 		teams.PATCH("/:teamname", updateOrganizationTeam)
 		teams.DELETE("/:teamname", deleteOrganizationTeam)
 	}
@@ -82,6 +83,36 @@ func createOrganizationTeam(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newTeam)
+}
+
+// getOrganizationTeam Get a team details
+// @Description Get a team details
+// @Summary Get a team details
+// @Tags Team
+// @Param orgname path string true "Name of the organization"
+// @Param teamname path string true "Name of the team"
+// @Success 200 {object} Dto.Team
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/team/{teamname} [get]
+func getOrganizationTeam(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	teamname := c.Param("teamname")
+
+	team, err := Services.GetTeam(orgname, teamname, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, team)
 }
 
 // updateOrganizationTeam Update team details

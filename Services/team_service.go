@@ -106,6 +106,30 @@ func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.Au
 	return createdTeam, nil
 }
 
+func GetTeam(orgName string, teamName string, currentUser Auth.AuthenticatedUser) (Dto.Team, error) {
+	// Retrieve organization and check if exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Dto.Team{}, Errors.OrganizationNotFound(orgName)
+		default:
+			return Dto.Team{}, err
+		}
+	}
+
+	// Browse the organization's team and find the team to get
+	for _, team := range organizationModel.Teams {
+		if team.Name == teamName {
+			// Convert model to dto and return
+			teamDto := Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes)
+			return teamDto, nil
+		}
+	}
+
+	return Dto.Team{}, Errors.TeamNotFound(teamName)
+}
+
 func UpdateTeam(teamToUpdate Dto.UpdateTeam, orgName string, teamName string, currentUser Auth.AuthenticatedUser) (Dto.Team, error) {
 	// Retrieve organization and check if exists
 	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
