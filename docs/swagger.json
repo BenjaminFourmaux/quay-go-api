@@ -622,6 +622,66 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update team details",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Update team details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization name",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Team name to update",
+                        "name": "teamname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Team description and role to update",
+                        "name": "team",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateTeam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Team"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/users/me": {
@@ -863,6 +923,17 @@
                 },
                 "tag_expiration_s": {
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.UpdateTeam": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },

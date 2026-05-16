@@ -162,23 +162,38 @@ func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganizat
 			return Dto.Organization{}, err
 		}
 
-		updatedFields := make(map[string]interface{})
+		// Select fields to update
+		mappings := map[string]Common.UpdateFieldMapping{}
 
 		if organizationMetadata.Email != nil {
-			updatedFields["email"] = strings.TrimSpace(*organizationMetadata.Email)
+			mappings["Email"] = Common.UpdateFieldMapping{
+				ModelFieldName: "Email",
+				Value:          strings.TrimSpace(*organizationMetadata.Email),
+			}
 		}
 
 		if organizationMetadata.InvoiceEmail != nil {
-			updatedFields["invoice_email"] = *organizationMetadata.InvoiceEmail
+			mappings["InvoiceEmail"] = Common.UpdateFieldMapping{
+				ModelFieldName: "InvoiceEmail",
+				Value:          *organizationMetadata.InvoiceEmail,
+			}
 		}
 
 		if organizationMetadata.InvoiceEmailAddress != nil {
-			updatedFields["invoice_email_address"] = *organizationMetadata.InvoiceEmailAddress
+			mappings["InvoiceEmailAddress"] = Common.UpdateFieldMapping{
+				ModelFieldName: "InvoiceEmailAddress",
+				Value:          *organizationMetadata.InvoiceEmailAddress,
+			}
 		}
 
 		if organizationMetadata.TagExpirationS != nil {
-			updatedFields["removed_tag_expiration_s"] = *organizationMetadata.TagExpirationS
+			mappings["TagExpirationS"] = Common.UpdateFieldMapping{
+				ModelFieldName: "TagExpirationS",
+				Value:          *organizationMetadata.TagExpirationS,
+			}
 		}
+
+		updatedFields := Common.BuildUpdatedFields[Models.User](organizationMetadata, mappings)
 
 		if err = Repositories.UpdateOrganizationFieldsById(organizationToUpdateModel.ID, updatedFields); err != nil {
 			return Dto.Organization{}, err

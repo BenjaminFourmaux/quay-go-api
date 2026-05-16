@@ -125,6 +125,13 @@ definitions:
       tag_expiration_s:
         type: integer
     type: object
+  Dto.UpdateTeam:
+    properties:
+      description:
+        type: string
+      role:
+        type: string
+    type: object
   Dto.UserLogin:
     properties:
       metadata: {}
@@ -611,6 +618,45 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a team
+      tags:
+      - Team
+    patch:
+      consumes:
+      - application/json
+      description: Update team details
+      parameters:
+      - description: Organization name
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Team name to update
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Team description and role to update
+        in: body
+        name: team
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateTeam'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update team details
       tags:
       - Team
   /api/v1/users/me:

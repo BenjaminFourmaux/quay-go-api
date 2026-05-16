@@ -68,9 +68,9 @@ func ValidateUpdateOrganization(organizationMetadata Dto.UpdateOrganization) err
 }
 
 /*
-ValidateRole cheks if the role is valid (e.g., "owners", "admin", "member")
+ValidateTeamRole cheks if the role is valid (e.g., "owners", "admin", "member")
 */
-func ValidateRole(role string) bool {
+func ValidateTeamRole(role string) bool {
 	return role == "admin" || role == "creator" || role == "member"
 }
 
@@ -89,7 +89,7 @@ func ValidateTeam(team Dto.CreateTeam) error {
 	}
 
 	// Validate Role (optional)
-	if team.Role != nil && !ValidateRole(*team.Role) {
+	if team.Role != nil && !ValidateTeamRole(*team.Role) {
 		return Errors.TeamRoleInvalid()
 	}
 
