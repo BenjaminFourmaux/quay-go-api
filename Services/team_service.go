@@ -14,7 +14,7 @@ func ListTeamsOfOrganization(orgName string, filters map[string]string, currentU
 	var filterRole string
 	var filterName string
 	if role, ok := filters["role"]; ok {
-		if validatedRole := Common.ValidateRole(role); !validatedRole {
+		if validatedRole := Common.ValidateTeamRole(role); !validatedRole {
 			return nil, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
 		}
 		filterRole = role
@@ -89,17 +89,7 @@ func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.Au
 		newTeam.Description = *teamMetadata.Description
 	}
 	if teamMetadata.Role != nil {
-		switch *teamMetadata.Role {
-		case "admin":
-			newTeam.RoleId = 1
-			break
-		case "creator":
-			newTeam.RoleId = 2
-			break
-		case "member":
-			newTeam.RoleId = 3
-			break
-		}
+		newTeam.RoleId = Common.GetTeamRoleIdFromRoleName(*teamMetadata.Role)
 	}
 
 	// Insert into the DB
@@ -114,6 +104,101 @@ func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.Au
 	createdTeam.Role = *teamMetadata.Role
 
 	return createdTeam, nil
+}
+
+func GetTeam(orgName string, teamName string, currentUser Auth.AuthenticatedUser) (Dto.Team, error) {
+	// Retrieve organization and check if exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Dto.Team{}, Errors.OrganizationNotFound(orgName)
+		default:
+			return Dto.Team{}, err
+		}
+	}
+
+	// Browse the organization's team and find the team to get
+	for _, team := range organizationModel.Teams {
+		if team.Name == teamName {
+			// Convert model to dto and return
+			teamDto := Common.ConvertTeamModelToDto(team, currentUser.ID, currentUser.Scopes)
+			return teamDto, nil
+		}
+	}
+
+	return Dto.Team{}, Errors.TeamNotFound(teamName)
+}
+
+func UpdateTeam(teamToUpdate Dto.UpdateTeam, orgName string, teamName string, currentUser Auth.AuthenticatedUser) (Dto.Team, error) {
+	// Retrieve organization and check if exists
+	organizationModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			return Dto.Team{}, Errors.OrganizationNotFound(orgName)
+		default:
+			return Dto.Team{}, err
+		}
+	}
+
+	// If the user is owners of the organization so it can delete teams of this organization
+	if isUserIsOrgOwner(currentUser.ID, organizationModel) {
+		// Check if the organization's team exists
+		var teamIdToUpdate int
+		for _, team := range organizationModel.Teams {
+			if team.Name == teamName {
+				teamIdToUpdate = team.ID
+				break
+			}
+		}
+
+		// If team not found
+		if teamIdToUpdate == 0 {
+			return Dto.Team{}, Errors.TeamNotFound(teamName)
+		}
+
+		// Validate input values
+		if teamToUpdate.Role != nil {
+			if roleOk := Common.ValidateTeamRole(*teamToUpdate.Role); !roleOk {
+				return Dto.Team{}, Errors.InvalidParameterValue("role", []string{"admin", "creator", "member"})
+			}
+		}
+
+		// Select fields to update
+		mappings := map[string]Common.UpdateFieldMapping{}
+
+		if teamToUpdate.Role != nil {
+			mappings["Role"] = Common.UpdateFieldMapping{
+				ModelFieldName: "RoleId",
+				Value:          Common.GetTeamRoleIdFromRoleName(*teamToUpdate.Role),
+			}
+		}
+		if teamToUpdate.Description != nil {
+			mappings["Description"] = Common.UpdateFieldMapping{
+				ModelFieldName: "Description",
+				Value:          *teamToUpdate.Description,
+			}
+		}
+
+		updatedFields := Common.BuildUpdatedFields[Models.Team](teamToUpdate, mappings)
+
+		if err = Repositories.UpdateTeamFieldsById(teamIdToUpdate, updatedFields); err != nil {
+			return Dto.Team{}, err
+		} else {
+			updatedTeamModel, err := Repositories.GetTeamById(teamIdToUpdate)
+			if err != nil {
+				return Dto.Team{}, err
+			}
+
+			// Convert model to dto
+			updatedTeam := Common.ConvertTeamModelToDto(updatedTeamModel, currentUser.ID, currentUser.Scopes)
+
+			return updatedTeam, nil
+		}
+	}
+
+	return Dto.Team{}, nil
 }
 
 func DeleteTeam(orgName string, teamName string, currentUser Auth.AuthenticatedUser) error {

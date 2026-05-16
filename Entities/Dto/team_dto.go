@@ -16,3 +16,8 @@ type CreateTeam struct {
 	Description *string `json:"description"` // Description of the Team can be in Markdown format (optional)
 	Role        *string `json:"role"`        // Name of the role ('admin', 'creator' or 'member'. Optional. Default 'member')
 }
+
+type UpdateTeam struct {
+	Description *string `json:"description"`
+	Role        *string `json:"role"`
+}

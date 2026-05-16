@@ -35,3 +35,16 @@ func CanViewTeams(userId int, team Models.Team, userScopes []Auth.Scope) bool {
 	}
 	return false
 }
+
+func GetTeamRoleIdFromRoleName(roleName string) int {
+	switch roleName {
+	case "admin":
+		return 1
+	case "creator":
+		return 2
+	case "member":
+		return 3
+	default:
+		return 0
+	}
+}

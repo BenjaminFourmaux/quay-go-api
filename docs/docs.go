@@ -476,7 +476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/{orgname}/teams": {
+        "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
                     {
@@ -485,7 +485,7 @@ const docTemplate = `{
                 ],
                 "description": "List organization's teams with optional filtering",
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "List organization's teams",
                 "parameters": [
@@ -550,7 +550,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "Create a team inside the organization",
                 "parameters": [
@@ -593,7 +593,61 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/{orgname}/teams/{teamname}": {
+        "/api/v1/organization/{orgname}/team/{teamname}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a team details",
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Get a team details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the team",
+                        "name": "teamname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Team"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
@@ -602,7 +656,7 @@ const docTemplate = `{
                 ],
                 "description": "Delete a team",
                 "tags": [
-                    "Organization"
+                    "Team"
                 ],
                 "summary": "Delete a team",
                 "parameters": [
@@ -624,6 +678,66 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update team details",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "summary": "Update team details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization name",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Team name to update",
+                        "name": "teamname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Team description and role to update",
+                        "name": "team",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateTeam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Team"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -879,6 +993,17 @@ const docTemplate = `{
                 },
                 "tag_expiration_s": {
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.UpdateTeam": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },

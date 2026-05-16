@@ -8,6 +8,18 @@ import (
 
 // <editor-fold desc="Common Errors">
 
+func InternalServerError() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusInternalServerError,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "internal_server_error",
+				Message: "An Internal Server Error was throw",
+			},
+		},
+	}
+}
+
 func Unauthorized() *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusUnauthorized,

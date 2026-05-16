@@ -40,6 +40,7 @@ func endpointsRegistration() {
 	messagesController()
 	usersController()
 	organizationController()
+	teamController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
@@ -168,7 +169,8 @@ func throwError(c *gin.Context, err error) {
 	if apiError, ok := err.(*Errors.ApiError); ok {
 		c.JSON(apiError.StatusCode, apiError.Err)
 	} else { // Default error handling
-		c.JSON(500, gin.H{"error": "Internal Server Error"})
+		defaultError := Errors.InternalServerError()
+		c.JSON(defaultError.StatusCode, defaultError.Err)
 	}
 }
 

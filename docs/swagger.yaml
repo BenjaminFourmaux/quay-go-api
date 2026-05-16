@@ -125,6 +125,13 @@ definitions:
       tag_expiration_s:
         type: integer
     type: object
+  Dto.UpdateTeam:
+    properties:
+      description:
+        type: string
+      role:
+        type: string
+    type: object
   Dto.UserLogin:
     properties:
       metadata: {}
@@ -514,7 +521,7 @@ paths:
       summary: List organization's members
       tags:
       - Organization
-  /api/v1/organization/{orgname}/teams:
+  /api/v1/organization/{orgname}/team:
     get:
       description: List organization's teams with optional filtering
       parameters:
@@ -554,7 +561,7 @@ paths:
       - ApiKeyAuth: []
       summary: List organization's teams
       tags:
-      - Organization
+      - Team
     post:
       consumes:
       - application/json
@@ -588,8 +595,8 @@ paths:
       - ApiKeyAuth: []
       summary: Create a team inside the organization
       tags:
-      - Organization
-  /api/v1/organization/{orgname}/teams/{teamname}:
+      - Team
+  /api/v1/organization/{orgname}/team/{teamname}:
     delete:
       description: Delete a team
       parameters:
@@ -618,7 +625,81 @@ paths:
       - ApiKeyAuth: []
       summary: Delete a team
       tags:
-      - Organization
+      - Team
+    get:
+      description: Get a team details
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a team details
+      tags:
+      - Team
+    patch:
+      consumes:
+      - application/json
+      description: Update team details
+      parameters:
+      - description: Organization name
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Team name to update
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Team description and role to update
+        in: body
+        name: team
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateTeam'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Team'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update team details
+      tags:
+      - Team
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information
