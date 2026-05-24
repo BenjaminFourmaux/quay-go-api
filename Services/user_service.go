@@ -7,14 +7,21 @@ import (
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
 	"quay-go-api/Services/Avatar"
+	logger "quay-go-api/Services/Logger"
 )
 
 func GetMeInfo(currentUser Auth.AuthenticatedUser) (Dto.UserMeResponse, error) {
+	logger.Info("[User Service] Get Me Info")
+	logger.Debug("Authenticated user ID: %d", currentUser.ID)
+
+	logger.Info("Retrieving current user with information from database")
 	userModel, err := Repositories.GetUserByIdWithUserInformation(currentUser.ID)
 	if err != nil {
+		logger.Error("Error retrieving current user with information from database: %s", err.Error())
 		return Dto.UserMeResponse{}, err
 	}
 	if userModel.ID == 0 {
+		logger.Warning("Current user not found in database: %d", currentUser.ID)
 		customErr := Errors.CurrentUserNotFound()
 		return Dto.UserMeResponse{}, customErr
 	}
@@ -36,9 +43,17 @@ func GetMeInfo(currentUser Auth.AuthenticatedUser) (Dto.UserMeResponse, error) {
 
 	userOrgs := []Dto.UserOrganization{}
 	if Auth.Can(Auth.ReadUser, currentUser.Scopes) {
-		orgsModel, _ := Repositories.GetUserOrganizations(userModel.ID)
+		logger.Info("Retrieving user organizations from database")
+		orgsModel, orgsErr := Repositories.GetUserOrganizations(userModel.ID)
+		if orgsErr != nil {
+			logger.Error("Error retrieving user organizations from database: %s", orgsErr.Error())
+		} else {
+			logger.Debug("User organizations found: %d", len(orgsModel))
+			userOrgs = Common.ConvertUserModelsToDto(orgsModel, userModel, currentUser.Scopes)
+		}
 
-		userOrgs = Common.ConvertUserModelsToDto(orgsModel, userModel, currentUser.Scopes)
+	} else {
+		logger.Debug("ReadUser scope missing, skipping organizations retrieval")
 	}
 
 	userDto := Dto.UserMeResponse{
