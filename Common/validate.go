@@ -9,6 +9,13 @@ import (
 )
 
 /*
+ValidateMessageSeverity checks if the severity is valid (e.g., "info", "warning", "error") and return true if the severity given is a valid Message severity, otherwise false
+*/
+func ValidateMessageSeverity(severity string) bool {
+	return severity == "info" || severity == "warning" || severity == "error"
+}
+
+/*
 ValidateCreateOrganization organization metadata for creating a new organization. Rules:
 The organization name must:
 1. Not be empty

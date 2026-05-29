@@ -98,24 +98,24 @@ func logAt(level Level, message string) {
 	fmt.Println(getCurrentDatetime() + introducer + levelToString(level) + separator + message)
 }
 
-func Debug(message string) {
-	logAt(LevelDebug, message)
+func Debug(message string, args ...interface{}) {
+	logAt(LevelDebug, fmt.Sprintf(message, args...))
 }
 
 func Info(message string) {
 	logAt(LevelInfo, message)
 }
 
-func Success(message string) {
-	logAt(LevelSuccess, message)
+func Success(message string, args ...interface{}) {
+	logAt(LevelSuccess, fmt.Sprintf(message, args...))
 }
 
-func Warning(message string) {
-	logAt(LevelWarning, message)
+func Warning(message string, args ...interface{}) {
+	logAt(LevelWarning, fmt.Sprintf(message, args...))
 }
 
-func Error(message string) {
-	logAt(LevelError, message)
+func Error(message string, args ...interface{}) {
+	logAt(LevelError, fmt.Sprintf(message, args...))
 }
 
 func Raise(err error) {

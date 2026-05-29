@@ -56,3 +56,11 @@ func ConnectDatabase() {
 		Logger.Info("Successfully connected to database")
 	}
 }
+
+func Ping() error {
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Ping()
+}
