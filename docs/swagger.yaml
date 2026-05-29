@@ -780,6 +780,32 @@ paths:
       summary: Get the current authenticated user information
       tags:
       - Users
+  /avatar/{kind}/{name}:
+    get:
+      description: Get user/org/team avatar
+      parameters:
+      - description: Avatar kind (user, org, team)
+        in: path
+        name: kind
+        required: true
+        type: string
+      - description: Username/Org name/Team name to get avatar for
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request invalid avatar kind
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      summary: Get user/org/team avatar
+      tags:
+      - Avatar
   /health:
     get:
       description: Get the API health status

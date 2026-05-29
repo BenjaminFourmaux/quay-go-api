@@ -76,6 +76,18 @@ func ForbiddenNoRequiredScope(scopes []Auth.Scope) *ApiError {
 	}
 }
 
+func BadRequest(msg string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "bad_request",
+				Message: msg,
+			},
+		},
+	}
+}
+
 func InvalidParameterValue(paramName string, allowedValues []string) *ApiError {
 	quotedValues := make([]string, len(allowedValues))
 	for i, val := range allowedValues {

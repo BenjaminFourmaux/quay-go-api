@@ -851,6 +851,45 @@
                 }
             }
         },
+        "/avatar/{kind}/{name}": {
+            "get": {
+                "description": "Get user/org/team avatar",
+                "tags": [
+                    "Avatar"
+                ],
+                "summary": "Get user/org/team avatar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Avatar kind (user, org, team)",
+                        "name": "kind",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username/Org name/Team name to get avatar for",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request invalid avatar kind",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Get the API health status",

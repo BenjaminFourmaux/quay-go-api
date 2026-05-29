@@ -37,6 +37,7 @@ func StartServer() {
 
 func endpointsRegistration() {
 	healthController()
+	avatarController()
 	messagesController()
 	usersController()
 	organizationController()
