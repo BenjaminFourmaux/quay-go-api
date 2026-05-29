@@ -8,9 +8,10 @@ type Team struct {
 	RoleId         int    `gorm:"type:int;not null"`
 
 	// FK
-	Organization User         `gorm:"foreignKey:OrganizationId;references:ID"`
-	Role         TeamRole     `gorm:"foreignKey:RoleId;references:ID"`
-	Members      []TeamMember `gorm:"foreignKey:TeamId;references:ID"`
+	Organization      User               `gorm:"foreignKey:OrganizationId;references:ID"`
+	Role              TeamRole           `gorm:"foreignKey:RoleId;references:ID"`
+	Members           []TeamMember       `gorm:"foreignKey:TeamId;references:ID"`
+	TeamMemberInvites []TeamMemberInvite `gorm:"foreignKey:TeamId;references:ID"`
 }
 
 func (Team) TableName() string {

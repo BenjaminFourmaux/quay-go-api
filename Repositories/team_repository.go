@@ -18,6 +18,18 @@ func GetTeamById(teamId int) (Models.Team, error) {
 	return team, err
 }
 
+func GetTeamDetailsById(teamId int) (Models.Team, error) {
+	var team Models.Team
+	err := Database.DB.
+		Preload("Role").
+		Preload("Members").
+		Preload("Members.User").
+		Preload("TeamMemberInvites").
+		First(&team, teamId).
+		Error
+	return team, err
+}
+
 func CreateTeam(team Models.Team) (Models.Team, error) {
 	err := Database.DB.Create(&team).Error
 	if err != nil {
