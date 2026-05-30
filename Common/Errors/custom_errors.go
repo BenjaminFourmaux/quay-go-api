@@ -286,3 +286,35 @@ func TeamRoleInvalid() *ApiError {
 }
 
 // </editor-fold>
+
+// <editor-fold desc="Members Errors">
+
+func MemberAlreadyInTeam() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusConflict,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "member_already_in_team",
+				Message: "The user is already a member of this team",
+			},
+		},
+	}
+}
+
+// </editor-fold>
+
+// <editor-fold desc="User Errors">
+
+func UserNotExists(username string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_not_exists",
+				Message: "The user '" + username + "' does not exist",
+			},
+		},
+	}
+}
+
+// </editor-fold>

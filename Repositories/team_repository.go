@@ -30,6 +30,22 @@ func GetTeamDetailsById(teamId int) (Models.Team, error) {
 	return team, err
 }
 
+/*
+GetOrganizationTeamsByOrgId returns organization teams with Role, Members, Members.User and TeamMemberInvites preloaded
+*/
+func GetOrganizationTeamsByOrgId(organizationId int) ([]Models.Team, error) {
+	var teams []Models.Team
+	err := Database.DB.
+		Preload("Role").
+		Preload("Members").
+		Preload("Members.User").
+		Preload("TeamMemberInvites").
+		Where("organization_id = ?", organizationId).
+		Find(&teams).
+		Error
+	return teams, err
+}
+
 func CreateTeam(team Models.Team) (Models.Team, error) {
 	err := Database.DB.Create(&team).Error
 	if err != nil {

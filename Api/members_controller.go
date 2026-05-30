@@ -7,14 +7,11 @@ import (
 )
 
 func membersController() {
-	teams := engine.Group("/api/v1/organization/:orgname/team/:teamname/members")
+	members := engine.Group("/api/v1/organization/:orgname/team/:teamname/members")
 	{
-		teams.Use(authorizedMiddleware)
-		teams.GET("/", listTeamMembers)
-		/*teams.POST("/", createOrganizationTeam)
-		teams.GET("/:teamname", getOrganizationTeam)
-		teams.PATCH("/:teamname", updateOrganizationTeam)
-		teams.DELETE("/:teamname", deleteOrganizationTeam)*/
+		members.Use(authorizedMiddleware)
+		members.GET("/", listTeamMembers)
+		members.PUT("/:membername", addMemberToTeam)
 	}
 }
 
@@ -51,4 +48,36 @@ func listTeamMembers(c *gin.Context) {
 		return
 	}
 	c.JSON(200, listMembers)
+}
+
+// addMemberToTeam Add a user to a team
+// @Description Add a user to a team
+// @Summary Add a user to a team
+// @Tags Members
+// @Param orgname path string true "Name of the organization"
+// @Param teamname path string true "Name of the team"
+// @Param membername path string true "Name of the user"
+// @Success 201 {object} Dto.TeamMember
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/team/{teamname}/members/{membername} [put]
+func addMemberToTeam(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	teamname := c.Param("teamname")
+	membername := c.Param("membername")
+
+	newMember, err := Services.AddMemberToTeam(orgname, teamname, membername, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(201, newMember)
 }
