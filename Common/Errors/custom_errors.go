@@ -76,6 +76,18 @@ func ForbiddenNoRequiredScope(scopes []Auth.Scope) *ApiError {
 	}
 }
 
+func BadRequest(msg string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "bad_request",
+				Message: msg,
+			},
+		},
+	}
+}
+
 func InvalidParameterValue(paramName string, allowedValues []string) *ApiError {
 	quotedValues := make([]string, len(allowedValues))
 	for i, val := range allowedValues {
@@ -268,6 +280,50 @@ func TeamRoleInvalid() *ApiError {
 			Error: ErrorDetails{
 				Code:    "team_role_invalid",
 				Message: "Team role is invalid. Must be one of 'member', 'admin' or 'creator'",
+			},
+		},
+	}
+}
+
+// </editor-fold>
+
+// <editor-fold desc="Members Errors">
+
+func MemberAlreadyInTeam() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusConflict,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "member_already_in_team",
+				Message: "The user is already a member of this team",
+			},
+		},
+	}
+}
+
+func MemberNotInTeam() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusConflict,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "member_not_in_team",
+				Message: "The user is not a member of this team",
+			},
+		},
+	}
+}
+
+// </editor-fold>
+
+// <editor-fold desc="User Errors">
+
+func UserNotExists(username string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_not_exists",
+				Message: "The user '" + username + "' does not exist",
 			},
 		},
 	}

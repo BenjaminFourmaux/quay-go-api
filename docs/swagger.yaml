@@ -107,6 +107,19 @@ definitions:
       role:
         type: string
     type: object
+  Dto.TeamMember:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      invited:
+        type: boolean
+      is_robot:
+        type: boolean
+      kind:
+        type: string
+      name:
+        type: string
+    type: object
   Dto.UpdateMessage:
     properties:
       content:
@@ -700,6 +713,131 @@ paths:
       summary: Update team details
       tags:
       - Team
+  /api/v1/organization/{orgname}/team/{teamname}/members:
+    get:
+      description: List team's members
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Filter team members on is_robot
+        in: query
+        name: is_robot
+        type: boolean
+      - description: Filter team members on invited status
+        in: query
+        name: is_invited
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.TeamMember'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List team's members
+      tags:
+      - Members
+  /api/v1/organization/{orgname}/team/{teamname}/members/{membername}:
+    delete:
+      description: Remove a user from a team
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Name of the user
+        in: path
+        name: membername
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a user from a team
+      tags:
+      - Members
+    put:
+      description: Add a user to a team
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Name of the user
+        in: path
+        name: membername
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.TeamMember'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a user to a team
+      tags:
+      - Members
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information
@@ -721,12 +859,42 @@ paths:
       summary: Get the current authenticated user information
       tags:
       - Users
+  /avatar/{kind}/{name}:
+    get:
+      description: Get user/org/team avatar
+      parameters:
+      - description: Avatar kind (user, org, team)
+        in: path
+        name: kind
+        required: true
+        type: string
+      - description: Username/Org name/Team name to get avatar for
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: html
+        "400":
+          description: Bad Request invalid avatar kind
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      summary: Get user/org/team avatar
+      tags:
+      - Avatar
   /health:
     get:
       description: Get the API health status
       responses:
         "200":
           description: OK
+          schema:
+            type: string
+        "503":
+          description: Service Unavailable
           schema:
             type: string
       summary: Get the API health status

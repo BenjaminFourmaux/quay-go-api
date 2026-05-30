@@ -14,6 +14,21 @@ func GetUserById(userId int) (Models.User, error) {
 }
 
 /*
+GetUserByName Get a user (not an org) from username
+*/
+func GetUserByName(userName string) (Models.User, error) {
+	var user Models.User
+
+	err := Database.DB.
+		Where("organization = ?", false).
+		Where("username = ?", userName).
+		First(&user).
+		Error
+
+	return user, err
+}
+
+/*
 GetUserByIdWithUserInformation Get a user by id and with federated logins, associate login service and user Prompts
 */
 func GetUserByIdWithUserInformation(userId int) (Models.User, error) {

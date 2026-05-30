@@ -13,7 +13,6 @@ import (
 func ListTeamsOfOrganization(orgName string, filters map[string]string, currentUser Auth.AuthenticatedUser) ([]Dto.Team, error) {
 	logger.Info("[Team Service] List Teams Of Organization")
 	logger.Debug("Organization name: %s", orgName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("With filters: %+v", filters)
 
 	// Validating filters
@@ -69,7 +68,6 @@ func ListTeamsOfOrganization(orgName string, filters map[string]string, currentU
 func CreateTeam(teamMetadata Dto.CreateTeam, orgName string, currentUser Auth.AuthenticatedUser) (Dto.Team, error) {
 	logger.Info("[Team Service] Create Team")
 	logger.Debug("Organization name: %s", orgName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("With dto: %+v", teamMetadata)
 
 	// Retrieve organization and check if exists
@@ -136,7 +134,6 @@ func GetTeam(orgName string, teamName string, currentUser Auth.AuthenticatedUser
 	logger.Info("[Team Service] Get Team")
 	logger.Debug("Organization name: %s", orgName)
 	logger.Debug("Team name: %s", teamName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 
 	// Retrieve organization and check if exists
 	logger.Info("Retrieving organization details from database")
@@ -170,7 +167,6 @@ func UpdateTeam(teamToUpdate Dto.UpdateTeam, orgName string, teamName string, cu
 	logger.Info("[Team Service] Update Team")
 	logger.Debug("Organization name: %s", orgName)
 	logger.Debug("Team name: %s", teamName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("With dto: %+v", teamToUpdate)
 
 	// Retrieve organization and check if exists
@@ -259,7 +255,6 @@ func DeleteTeam(orgName string, teamName string, currentUser Auth.AuthenticatedU
 	logger.Info("[Team Service] Delete Team")
 	logger.Debug("Organization name: %s", orgName)
 	logger.Debug("Team name: %s", teamName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 
 	// Get the org (with detail, for user role checking) if exists
 	logger.Info("Retrieving organization details from database")
