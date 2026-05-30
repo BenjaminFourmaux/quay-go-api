@@ -12,3 +12,7 @@ func CreateTeamMember(teamMember Models.TeamMember) (Models.TeamMember, error) {
 	}
 	return teamMember, nil
 }
+
+func DeleteTeamMember(teamMember Models.TeamMember) error {
+	return Database.DB.Delete(&teamMember).Error
+}

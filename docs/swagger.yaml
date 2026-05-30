@@ -760,6 +760,44 @@ paths:
       tags:
       - Members
   /api/v1/organization/{orgname}/team/{teamname}/members/{membername}:
+    delete:
+      description: Remove a user from a team
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      - description: Name of the user
+        in: path
+        name: membername
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a user from a team
+      tags:
+      - Members
     put:
       description: Add a user to a team
       parameters:

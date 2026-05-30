@@ -1,6 +1,7 @@
 package Services
 
 import (
+	"fmt"
 	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Entities/Models"
@@ -184,6 +185,78 @@ func AddMemberToTeam(orgName string, teamName string, memberName string, current
 	}
 
 	return Dto.TeamMember{}, Errors.TeamNotFound(teamName)
+}
+
+func RemoveMemberToTeam(orgName string, teamName string, memberName string, currentUser Auth.AuthenticatedUser) error {
+	logger.Info("[Members Service] Remove Team Member")
+	logger.Debug("Organization name: %s", orgName)
+	logger.Debug("Team name: %s", teamName)
+	logger.Debug("Username: %s", memberName)
+
+	// 1. Get organization by name and check if exists
+	logger.Info("Get organization and check if exists")
+	organizationModel, err := Repositories.GetOrganizationByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Organization not found: %s", orgName)
+			return Errors.OrganizationNotFound(orgName)
+		default:
+			logger.Error("Error retrieving organization details from database: %s", err.Error())
+			return err
+		}
+	}
+	logger.Debug("Organization found: %s (ID: %d)", organizationModel.Username, organizationModel.ID)
+
+	// 2. Get organization teams with members
+	logger.Info("Get organization teams")
+	teamsModel, err := Repositories.GetOrganizationTeamsByOrgId(organizationModel.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found": // not possible but "on sait jamais"
+			logger.Warning("Teams not found in organization: %s", orgName)
+			return Errors.TeamNotFound(orgName)
+		default:
+			logger.Error("Error retrieving organization details from database: %s", err.Error())
+			return err
+		}
+	}
+	logger.Debug("Teams found in organization: %d", len(teamsModel))
+
+	organizationModel.Teams = teamsModel
+
+	// 3. Check if team exist
+	logger.Info("Checking if team exists in the organization")
+	for _, team := range organizationModel.Teams {
+		if team.Name == teamName {
+			// Team matching, continue the treatment
+			logger.Info("Check if the current user can perform this action")
+			if !Auth.Can(Auth.OrgAdmin, currentUser.Scopes) || !isUserIsOrgOwner(currentUser.ID, organizationModel) {
+				logger.Warning("Current user cannot perform this action (not Scope OrgAdmin or not organization owner)")
+				return Errors.UnauthorizedInsufficientRole()
+			}
+
+			// 4. Check if the user is on the team
+			logger.Info("Check if the current user is in the team")
+			for _, member := range team.Members {
+				if member.User.Username == memberName {
+					// 5. Remove it
+					logger.Info(fmt.Sprintf("Removing user %d from the team", member.UserId))
+					err = Repositories.DeleteTeamMember(member)
+					if err != nil {
+						logger.Error("Error removing user from the team: %s", err.Error())
+						return err
+					}
+					return nil
+				} else {
+					logger.Warning("User is not on the team")
+					return Errors.MemberNotInTeam()
+				}
+			}
+		}
+	}
+
+	return Errors.TeamNotFound(teamName)
 }
 
 // <editor-fold desc="Private Methods">
