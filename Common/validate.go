@@ -102,3 +102,10 @@ func ValidateTeam(team Dto.CreateTeam) error {
 
 	return nil
 }
+
+/*
+ValidateRepositoryKind cheks if the kind is valid (e.g., "image", or "application")
+*/
+func ValidateRepositoryKind(kind string) bool {
+	return kind == "image" || kind == "application"
+}

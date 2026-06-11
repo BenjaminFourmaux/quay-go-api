@@ -468,6 +468,70 @@
                 }
             }
         },
+        "/api/v1/organization/{orgname}/repository": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List organization's repositories",
+                "tags": [
+                    "Repository"
+                ],
+                "summary": "List organization's repositories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter on public repositories",
+                        "name": "is_public",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter on stared repositories",
+                        "name": "is_starred",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Repository"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -1167,6 +1231,34 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "Dto.Repository": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_starred": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "Image or Application",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Image name",
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 }
             }
         },
