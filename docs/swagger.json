@@ -468,70 +468,6 @@
                 }
             }
         },
-        "/api/v1/organization/{orgname}/repository": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List organization's repositories",
-                "tags": [
-                    "Repository"
-                ],
-                "summary": "List organization's repositories",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Name of the organization",
-                        "name": "orgname",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter on public repositories",
-                        "name": "is_public",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter on stared repositories",
-                        "name": "is_starred",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Dto.Repository"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/Errors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/Errors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/Errors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -980,6 +916,69 @@
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/repository": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List repositories",
+                "tags": [
+                    "Repository"
+                ],
+                "summary": "List repositories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization or Username as namespace to filter repositories",
+                        "name": "namespace",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter on public repositories",
+                        "name": "is_public",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter on stared repositories",
+                        "name": "is_starred",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Repository"
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request",

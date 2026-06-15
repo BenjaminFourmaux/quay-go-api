@@ -135,3 +135,14 @@ func getGormTagValue(tag string, key string) string {
 
 	return ""
 }
+
+/*
+InlineIf Return a if the condition is true, otherwise return b.
+This function is generic and can be used with any type.
+*/
+func InlineIf[T any](condition bool, a T, b T) T {
+	if condition {
+		return a
+	}
+	return b
+}

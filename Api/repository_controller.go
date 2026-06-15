@@ -7,18 +7,18 @@ import (
 )
 
 func repositoryController() {
-	repository := engine.Group("/api/v1/organization/:orgname/repository")
+	repository := engine.Group("/api/v1/repository")
 	{
 		repository.Use(authorizedMiddleware)
-		repository.GET("/", listOrganizationRepositories)
+		repository.GET("", listRepositories)
 	}
 }
 
-// listOrganizationRepositories List organization's repositories
-// @Description List organization's repositories
-// @Summary List organization's repositories
+// listRepositories List repositories
+// @Description List repositories
+// @Summary List repositories
 // @Tags Repository
-// @Param orgname path string true "Name of the organization"
+// @Param namespace query string false "Organization or Username as namespace to filter repositories"
 // @Param is_public query bool false "Filter on public repositories"
 // @Param is_starred query bool false "Filter on stared repositories"
 // @Success 200 {object} []Dto.Repository
@@ -26,20 +26,18 @@ func repositoryController() {
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
-// @Router /api/v1/organization/{orgname}/repository [get]
-func listOrganizationRepositories(c *gin.Context) {
+// @Router /api/v1/repository [get]
+func listRepositories(c *gin.Context) {
 	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.ReadRepo})
 	if hasScopeErr != nil {
 		throwError(c, hasScopeErr)
 		return
 	}
 
-	orgname := c.Param("orgname")
-
 	// Get filters from query params
 	filters := extractFilters(c)
 
-	listTeams, err := Services.ListOrganizationRepositories(orgname, filters, &currentUser)
+	listTeams, err := Services.ListRepositories(filters, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return

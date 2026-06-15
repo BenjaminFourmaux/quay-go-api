@@ -161,6 +161,18 @@ func OrganizationNotFound(orgName string) *ApiError {
 	}
 }
 
+func UserOrOrganizationNotFound(name string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_or_organization_not_found",
+				Message: "The user or organization '" + name + "' does not exist",
+			},
+		},
+	}
+}
+
 func UserOrOrganizationAlreadyExists() *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusConflict,

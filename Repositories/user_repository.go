@@ -43,10 +43,13 @@ func GetUserByIdWithUserInformation(userId int) (Models.User, error) {
 	return user, err
 }
 
+/*
+GetUserOrOrganizationByName Get both User or Organization by his name
+*/
 func GetUserOrOrganizationByName(organizationName string) (Models.User, error) {
 	var user Models.User
 
-	err := Database.DB.Where("name = ?", organizationName).First(&user).Error
+	err := Database.DB.Where("username = ?", organizationName).First(&user).Error
 
 	return user, err
 }

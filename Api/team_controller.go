@@ -12,8 +12,8 @@ func teamController() {
 	teams := engine.Group("/api/v1/organization/:orgname/team")
 	{
 		teams.Use(authorizedMiddleware)
-		teams.GET("/", listOrganizationTeams)
-		teams.POST("/", createOrganizationTeam)
+		teams.GET("", listOrganizationTeams)
+		teams.POST("", createOrganizationTeam)
 		teams.GET("/:teamname", getOrganizationTeam)
 		teams.PATCH("/:teamname", updateOrganizationTeam)
 		teams.DELETE("/:teamname", deleteOrganizationTeam)
