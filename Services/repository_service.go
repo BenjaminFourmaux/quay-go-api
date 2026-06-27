@@ -10,7 +10,11 @@ import (
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
 	logger "quay-go-api/Services/Logger"
+	"sort"
+	"time"
 )
+
+const maxDaysIn3Months = 90
 
 func ListRepositories(filters map[string]string, currentUser *Auth.AuthenticatedUser) ([]Dto.Repository, error) {
 	logger.Info("[Repository Service] List Repositories")
@@ -109,8 +113,8 @@ func ListRepositories(filters map[string]string, currentUser *Auth.Authenticated
 			Namespace:   Common.InlineIf(repository.NamespaceUserId != nil, repository.NamespaceUser.Username, ""),
 			Name:        repository.Name,
 			Description: repository.Description,
-			IsPublic:    repository.VisibilityId == 1,
 			Kind:        repository.Kind.Name,
+			IsPublic:    repository.VisibilityId == 1,
 			State:       Common.MapRepositoryStateStr(repository.State),
 			IsStarred:   isStarred,
 		})
@@ -175,7 +179,7 @@ func CreateRepository(repositoryMetadata Dto.CreateRepository, currentUser Auth.
 	}
 
 	// Insert the new repository to the DB
-	createdRepositoryModel, err := Repositories.CreateRepositoryTransaction(repositoryToCreate)
+	createdRepositoryModel, err := Repositories.CreateRepositoryTransaction(repositoryToCreate, currentUser.ID)
 	if err != nil {
 		logger.Error("Error creating repository: %s", err.Error())
 		return Dto.Repository{}, err
@@ -194,11 +198,197 @@ func CreateRepository(repositoryMetadata Dto.CreateRepository, currentUser Auth.
 		Namespace:   Common.InlineIf(newRepositoryModel.NamespaceUserId != nil, newRepositoryModel.NamespaceUser.Username, ""),
 		Name:        newRepositoryModel.Name,
 		Description: newRepositoryModel.Description,
-		IsPublic:    newRepositoryModel.VisibilityId == 1,
 		Kind:        newRepositoryModel.Kind.Name,
+		IsPublic:    newRepositoryModel.VisibilityId == 1,
 		State:       Common.MapRepositoryStateStr(newRepositoryModel.State),
 		IsStarred:   false, // not starred, it has just been created
 	}
 
 	return newRepository, nil
 }
+
+func GetRepository(repositoryNamespaced string, filters map[string]string, currentUser *Auth.AuthenticatedUser) (Dto.RepositoryDetails, error) {
+	logger.Info("[Repository Service] Get Repository")
+	logger.Debug("Repository: %s", repositoryNamespaced)
+	logger.Debug("With filters: %+v", filters)
+
+	// Validating filters
+	var filterIncludeTags bool = false
+	var filterIncludeStats bool = false
+	if it, ok := filters["include_tags"]; ok && it != "" {
+		filterIncludeTags = it == "true"
+	}
+	if is, ok := filters["include_stats"]; ok && is != "" {
+		filterIncludeStats = is == "true"
+	}
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Dto.RepositoryDetails{}, Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Dto.RepositoryDetails{}, Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return Dto.RepositoryDetails{}, err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Dto.RepositoryDetails{}, Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return Dto.RepositoryDetails{}, err
+		}
+	}
+
+	// Get repository with details
+	repositoryModel, err := Repositories.GetRepositoryById(repoExist.ID, currentUser.ID)
+	if err != nil {
+		logger.Error("Error retrieving repository: %s", err.Error())
+		return Dto.RepositoryDetails{}, err
+	}
+
+	hasWritePermission := checkRepositoryUserPermission(repositoryModel.ID, currentUser.ID, "write")
+	hasWritePermission = hasWritePermission && repositoryModel.State == 0 // NORMAL
+	hasAdminPermission := checkRepositoryUserPermission(repositoryModel.ID, currentUser.ID, "admin")
+
+	// Convert model to dto
+	repository := Dto.RepositoryDetails{
+		Name:           repositoryModel.Name,
+		Namespace:      Common.InlineIf(repositoryModel.NamespaceUserId != nil, repositoryModel.NamespaceUser.Username, ""),
+		Description:    repositoryModel.Description,
+		Kind:           repositoryModel.Kind.Name,
+		IsPublic:       repositoryModel.VisibilityId == 1,
+		IsOrganization: repositoryModel.NamespaceUserId != nil && repositoryModel.NamespaceUser.Organization,
+		IsStarred:      len(repositoryModel.Stars) > 0,
+		StatusToken:    repositoryModel.BadgeToken,
+		TrustEnabled:   false,
+		TagExpirationS: Common.InlineIf(repositoryModel.NamespaceUserId != nil, repositoryModel.NamespaceUser.RemovedTagExpirationS, 1209600), // 14 days default
+		State:          Common.MapRepositoryStateStr(repositoryModel.State),
+		CanWrite:       hasWritePermission,
+		CanAdmin:       hasAdminPermission,
+	}
+
+	// Apply filters
+	if filterIncludeTags {
+		tagsModel, err := Repositories.GetTagsFromRepository(repositoryModel.ID)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Info("No tags found for repository: %s", repositoryModel.ID)
+				repository.Tags = []Dto.RepositoryTag{}
+			default:
+				logger.Error("Error retrieving tags from database: %s", err.Error())
+				return Dto.RepositoryDetails{}, err
+			}
+		} else {
+			// Add and convert tags model to dto
+			tags := []Dto.RepositoryTag{}
+			for _, tag := range tagsModel {
+				tags = append(tags, Dto.RepositoryTag{
+					Name:           tag.Name,
+					Size:           *tag.Manifest.LayersCompressedSize,
+					LastModified:   time.UnixMilli(tag.LifetimeStartMs),
+					ManifestDigest: tag.Manifest.Digest,
+				})
+			}
+			repository.Tags = tags
+		}
+	}
+
+	if filterIncludeStats {
+		countsModel, err := Repositories.GetCountsFromRepository(repositoryModel.ID)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Info("No stats found for repository: %s", repositoryModel.ID)
+				repository.Stats = []Dto.RepositoryStats{}
+			default:
+				logger.Error("Error retrieving stats from database: %s", err.Error())
+				return Dto.RepositoryDetails{}, err
+			}
+		} else {
+			stats := make([]Dto.RepositoryStats, 0, len(countsModel))
+			foundDates := make(map[string]struct{}, len(countsModel))
+
+			for _, count := range countsModel {
+				countDate := time.Date(count.Date.Year(), count.Date.Month(), count.Date.Day(), 0, 0, 0, 0, time.UTC)
+				stats = append(stats, Dto.RepositoryStats{
+					Date:  countDate,
+					Count: count.Count,
+				})
+				key := fmt.Sprintf("%d/%d", countDate.Month(), countDate.Day())
+				foundDates[key] = struct{}{}
+			}
+
+			// Fill in any missing stats with zeros.
+			now := time.Now().UTC()
+			for day := 1; day < maxDaysIn3Months; day++ {
+				dayDate := now.AddDate(0, 0, -day)
+				key := fmt.Sprintf("%d/%d", dayDate.Month(), dayDate.Day())
+				if _, ok := foundDates[key]; !ok {
+					stats = append(stats, Dto.RepositoryStats{
+						Date:  time.Date(dayDate.Year(), dayDate.Month(), dayDate.Day(), 0, 0, 0, 0, time.UTC),
+						Count: 0,
+					})
+				}
+			}
+
+			// Order stats by date descending (the newest first)
+			sort.Slice(stats, func(i, j int) bool {
+				return stats[i].Date.After(stats[j].Date)
+			})
+
+			repository.Stats = stats
+		}
+	}
+
+	return repository, nil
+}
+
+// <editor-fold desc="Private Methods"
+
+func checkRepositoryUserPermission(repositoryId int, userId int, role string) bool {
+	// Get user permission on the repository
+	userPermission, err := Repositories.GetRepositoryUserPermission(repositoryId, userId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Debug("No permission found for user %d on repository %d", userId, repositoryId)
+			return false
+		default:
+			logger.Error("Error retrieving permission from database: %s", err.Error())
+			return false
+		}
+	}
+
+	switch role {
+	case "admin":
+		return userPermission.Role.Name == "admin"
+	case "write":
+		return userPermission.Role.Name == "admin" || userPermission.Role.Name == "write"
+	case "read":
+		return userPermission.Role.Name == "admin" || userPermission.Role.Name == "read"
+	default:
+		logger.Warning("Invalid role: %s", role)
+		return false
+	}
+}
+
+// </editor-fold>

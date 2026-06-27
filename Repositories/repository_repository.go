@@ -64,32 +64,44 @@ func FindRepositoryByNameAndNamespace(name string, namespace *string) (Models.Re
 	return repository, err
 }
 
-func CreateRepositoryTransaction(repository Models.Repository) (*Models.Repository, error) {
+func CreateRepositoryTransaction(repository Models.Repository, userId int) (*Models.Repository, error) {
 	err := Database.DB.Transaction(func(tx *gorm.DB) error {
 		// 1. Create the repository
 		if err := tx.Create(&repository).Error; err != nil {
 			return err // rollback
 		}
 
-		// 2. Define Repository Action Count model
+		// 2. Define Repository Permission to add the user as admin
+		permission := Models.RepositoryPermission{
+			UserId:       &userId,
+			RepositoryId: repository.ID,
+			RoleId:       1, // Admin role
+		}
+
+		// 3. Create the Repository Permission entry
+		if err := tx.Create(&permission).Error; err != nil {
+			return err // rollback
+		}
+
+		// 4. Define Repository Action Count model
 		actionCount := Models.RepositoryActionCount{
 			RepositoryId: repository.ID,
 			Count:        0,
 			Date:         time.Now(),
 		}
 
-		// 3. Create Repository Action Count entry
+		// 5. Create Repository Action Count entry
 		if err := tx.Create(&actionCount).Error; err != nil {
 			return err
 		}
 
-		// 4. Define Repository Search Score model
+		// 6. Define Repository Search Score model
 		searchScore := Models.RepositorySearchScore{
 			RepositoryId: repository.ID,
 			Score:        0,
 		}
 
-		// 5. Create Repository Search Score entry
+		// 7. Create Repository Search Score entry
 		if err := tx.Create(&searchScore).Error; err != nil {
 			return err
 		}

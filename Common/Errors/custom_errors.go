@@ -381,6 +381,18 @@ func RepositoryNamespaceInvalid() *ApiError {
 	}
 }
 
+func RepositoryInvalid(repository string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "repository_invalid",
+				Message: "Invalid repository '" + repository + "'",
+			},
+		},
+	}
+}
+
 func RepositoryNamespaceNotFound(namespace string) *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusNotFound,
@@ -388,6 +400,18 @@ func RepositoryNamespaceNotFound(namespace string) *ApiError {
 			Error: ErrorDetails{
 				Code:    "repository_namespace_not_found",
 				Message: "The namespace '" + namespace + "' does not exist. Provide a valid user or organization name",
+			},
+		},
+	}
+}
+
+func RepositoryNotFound(repository string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "repository_not_found",
+				Message: "The repository '" + repository + "' does not exist",
 			},
 		},
 	}

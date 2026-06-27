@@ -3,6 +3,7 @@ package Api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Services"
 	"quay-go-api/Services/Auth"
@@ -14,6 +15,7 @@ func repositoryController() {
 		repository.Use(authorizedMiddleware)
 		repository.GET("", listRepositories)
 		repository.POST("", createRepository)
+		repository.GET("/*repository", getRepository)
 	}
 }
 
@@ -75,4 +77,37 @@ func createRepository(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newRepository)
+}
+
+// getRepository Get a repository
+// @Description Get a repository
+// @Summary Get a repository
+// @Tags Repository
+// @Param repository path string true "Repository name in the format namespace/repository"
+// @Param include_tags query bool false "Include tags in the repository response"
+// @Param include_stats query bool false "Include statistics in the repository response"
+// @Success 200 {object} Dto.RepositoryDetails
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository} [get]
+func getRepository(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.ReadRepo})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	repositoryNamespaced := strings.TrimPrefix(c.Param("repository"), "/")
+
+	// Get filters from query params
+	filters := extractFilters(c)
+
+	repository, err := Services.GetRepository(repositoryNamespaced, filters, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(200, repository)
 }

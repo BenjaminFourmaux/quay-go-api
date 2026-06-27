@@ -1047,6 +1047,67 @@
                 }
             }
         },
+        "/api/v1/repository/{repository}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a repository",
+                "tags": [
+                    "Repository"
+                ],
+                "summary": "Get a repository",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include tags in the repository response",
+                        "name": "include_tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include statistics in the repository response",
+                        "name": "include_stats",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.RepositoryDetails"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -1199,6 +1260,7 @@
                     "type": "string"
                 },
                 "namespace": {
+                    "description": "Can be null if is a global repo, not organization scoped",
                     "type": "string"
                 }
             }
@@ -1324,6 +1386,92 @@
                 },
                 "state": {
                     "type": "string"
+                }
+            }
+        },
+        "Dto.RepositoryDetails": {
+            "type": "object",
+            "properties": {
+                "can_admin": {
+                    "type": "boolean"
+                },
+                "can_write": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_organization": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_starred": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "stats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.RepositoryStats"
+                    }
+                },
+                "status_token": {
+                    "type": "string"
+                },
+                "tag_expiration_s": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.RepositoryTag"
+                    }
+                },
+                "trust_enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Dto.RepositoryStats": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "description": "In format: yyyy-mm-dd",
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.RepositoryTag": {
+            "type": "object",
+            "properties": {
+                "last_modified": {
+                    "type": "string"
+                },
+                "manifest_digest": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "In bits",
+                    "type": "integer"
                 }
             }
         },

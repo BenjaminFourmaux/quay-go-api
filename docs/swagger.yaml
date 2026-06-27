@@ -35,6 +35,7 @@ definitions:
       name:
         type: string
       namespace:
+        description: Can be null if is a global repo, not organization scoped
         type: string
     type: object
   Dto.CreateTeam:
@@ -120,6 +121,63 @@ definitions:
         type: string
       state:
         type: string
+    type: object
+  Dto.RepositoryDetails:
+    properties:
+      can_admin:
+        type: boolean
+      can_write:
+        type: boolean
+      description:
+        type: string
+      is_organization:
+        type: boolean
+      is_public:
+        type: boolean
+      is_starred:
+        type: boolean
+      kind:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+      state:
+        type: string
+      stats:
+        items:
+          $ref: '#/definitions/Dto.RepositoryStats'
+        type: array
+      status_token:
+        type: string
+      tag_expiration_s:
+        type: integer
+      tags:
+        items:
+          $ref: '#/definitions/Dto.RepositoryTag'
+        type: array
+      trust_enabled:
+        type: boolean
+    type: object
+  Dto.RepositoryStats:
+    properties:
+      count:
+        type: integer
+      date:
+        description: 'In format: yyyy-mm-dd'
+        type: string
+    type: object
+  Dto.RepositoryTag:
+    properties:
+      last_modified:
+        type: string
+      manifest_digest:
+        type: string
+      name:
+        type: string
+      size:
+        description: In bits
+        type: integer
     type: object
   Dto.Team:
     properties:
@@ -937,6 +995,45 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a repository
+      tags:
+      - Repository
+  /api/v1/repository/{repository}:
+    get:
+      description: Get a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Include tags in the repository response
+        in: query
+        name: include_tags
+        type: boolean
+      - description: Include statistics in the repository response
+        in: query
+        name: include_stats
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.RepositoryDetails'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository
       tags:
       - Repository
   /api/v1/users/me:
