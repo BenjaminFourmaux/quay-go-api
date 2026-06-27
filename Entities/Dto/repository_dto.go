@@ -9,3 +9,11 @@ type Repository struct {
 	State       string `json:"state"`
 	IsStarred   bool   `json:"is_starred"`
 }
+
+type CreateRepository struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Namespace   *string `json:"namespace"` // Can be null if is a global repo, not organization scoped
+	IsPublic    bool    `json:"is_public"`
+	Kind        string  `json:"kind"`
+}

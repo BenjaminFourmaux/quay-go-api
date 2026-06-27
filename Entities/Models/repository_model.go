@@ -12,10 +12,12 @@ type Repository struct {
 	State           int    `gorm:"column:state;type:int;not null"` // Enum: NORMAL = 0, READ_ONLY = 1, MIRROR = 2 MARKED_FOR_DELETION = 3, ORG_MIRROR = 4
 
 	// FK
-	NamespaceUser *User          `gorm:"foreignKey:NamespaceUserId;references:ID"`
-	Kind          RepositoryKind `gorm:"foreignKey:KindId;references:ID"`
-	Visibility    Visibility     `gorm:"foreignKey:VisibilityId;references:ID"`
-	Stars         []Star         `gorm:"foreignKey:RepositoryId;references:ID"`
+	NamespaceUser *User                   `gorm:"foreignKey:NamespaceUserId;references:ID"`
+	Kind          RepositoryKind          `gorm:"foreignKey:KindId;references:ID"`
+	Visibility    Visibility              `gorm:"foreignKey:VisibilityId;references:ID"`
+	Stars         []Star                  `gorm:"foreignKey:RepositoryId;references:ID"`
+	ActionsCount  []RepositoryActionCount `gorm:"foreignKey:RepositoryId;references:ID"`
+	SearchScore   RepositorySearchScore   `gorm:"foreignKey:RepositoryId;references:ID"`
 }
 
 func (f *Repository) TableName() string {

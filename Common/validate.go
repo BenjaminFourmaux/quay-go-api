@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+/* DEV NOTE
+- function to check if a field is valid must be named like: IsValide<FieldName> and return a bool
+- function to validate a Dto must be named like: Validate<DtoName> and return an error
+*/
+
 /*
 ValidateMessageSeverity checks if the severity is valid (e.g., "info", "warning", "error") and return true if the severity given is a valid Message severity, otherwise false
 */
@@ -16,32 +21,43 @@ func ValidateMessageSeverity(severity string) bool {
 }
 
 /*
-ValidateCreateOrganization organization metadata for creating a new organization. Rules:
-The organization name must:
+ValidateCreateOrganization organization metadata for creating a new organization.
+*/
+func ValidateCreateOrganization(organizationMetadata Dto.CreateOrganization) error {
+	// Validate org name
+	if !IsValidOrganizationOrUserName(organizationMetadata.Name) {
+		return Errors.OrganizationNameInvalid()
+	}
+
+	return nil
+}
+
+/*
+IsValidOrganizationOrUserName checks if the organization or user name is valid (e.g., "my-org", "user_name", "username123")
+Rules:
 1. Not be empty
 2. Be between 2 and 255 characters long
 3. Contain only alphanumeric characters, dashes, or underscores
 */
-func ValidateCreateOrganization(organizationMetadata Dto.CreateOrganization) error {
-	// Validate org name
+func IsValidOrganizationOrUserName(name string) bool {
 	// 1. empty value
-	if organizationMetadata.Name == "" {
-		return Errors.OrganizationNameInvalid()
+	if name == "" {
+		return false
 	}
 
 	// 2. value length
-	if len(organizationMetadata.Name) < 2 || len(organizationMetadata.Name) > 255 {
-		return Errors.OrganizationNameInvalid()
+	if len(name) < 2 || len(name) > 255 {
+		return false
 	}
 
 	// 3. valid characters (alphanumeric, dash and underscore)
-	for _, char := range organizationMetadata.Name {
+	for _, char := range name {
 		if !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '-' && char != '_' {
-			return Errors.OrganizationNameInvalid()
+			return false
 		}
 	}
 
-	return nil
+	return true
 }
 
 func ValidateUpdateOrganization(organizationMetadata Dto.UpdateOrganization) error {
@@ -103,9 +119,44 @@ func ValidateTeam(team Dto.CreateTeam) error {
 	return nil
 }
 
+func ValidateCreateRepository(repositoryMetadata Dto.CreateRepository) error {
+	// Validate repository name
+	if !IsValidRepositoryName(repositoryMetadata.Name) {
+		return Errors.RepositoryNameInvalid()
+	}
+
+	// Validate Namespace if present
+	if repositoryMetadata.Namespace != nil && !IsValidOrganizationOrUserName(*repositoryMetadata.Namespace) {
+		return Errors.RepositoryNamespaceInvalid()
+	}
+
+	// Validate kind
+	if !IsValidRepositoryKind(repositoryMetadata.Kind) {
+		return Errors.RepositoryKindInvalid()
+	}
+
+	return nil
+}
+
 /*
-ValidateRepositoryKind cheks if the kind is valid (e.g., "image", or "application")
+IsValidRepositoryKind cheks if the kind is valid (e.g., "image", or "application")
 */
-func ValidateRepositoryKind(kind string) bool {
+func IsValidRepositoryKind(kind string) bool {
 	return kind == "image" || kind == "application"
+}
+
+/*
+IsValidRepositoryName checks if the repository name is valid (e.g., "my-repo", "user_name/my-repo", "username123/my-repo")
+*/
+func IsValidRepositoryName(repositoryName string) bool {
+	repositoryName = strings.TrimSpace(repositoryName)
+	if repositoryName == "" {
+		return false
+	}
+
+	var reRepositoryName = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*)*$`)
+	if len(repositoryName) > 255 || !reRepositoryName.MatchString(repositoryName) {
+		return false
+	}
+	return true
 }

@@ -77,6 +77,10 @@ func authorizedMiddleware(c *gin.Context) {
 	c.Set("scopes", validatedToken.Scope)
 	c.Set("authenticatedUserId", validatedToken.AuthorizedUserID)
 
+	// Log
+	Logger.Debug("[Auth] Authenticated User ID: %d", validatedToken.AuthorizedUserID)
+	Logger.Debug("[Auth] Authenticated User Scopes: %s", validatedToken.Scope)
+
 	c.Next()
 }
 

@@ -24,6 +24,19 @@ definitions:
       name:
         type: string
     type: object
+  Dto.CreateRepository:
+    properties:
+      description:
+        type: string
+      is_public:
+        type: boolean
+      kind:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+    type: object
   Dto.CreateTeam:
     properties:
       description:
@@ -895,6 +908,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List repositories
+      tags:
+      - Repository
+    post:
+      consumes:
+      - application/json
+      description: Create a repository
+      parameters:
+      - description: Repository metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateRepository'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Repository'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a repository
       tags:
       - Repository
   /api/v1/users/me:
