@@ -48,3 +48,20 @@ func GetTeamRoleIdFromRoleName(roleName string) int {
 		return 0
 	}
 }
+
+func MapRepositoryStateStr(stateId int) string {
+	switch stateId {
+	case 0:
+		return "NORMAL" // Regular repo where all actions are possible
+	case 1:
+		return "READ_ONLY" // Only read actions, such as pull, are allowed regardless of specific user permissions
+	case 2:
+		return "MIRROR" // Equivalent to READ_ONLY except that mirror robot has write permission
+	case 3:
+		return "MARKED_FOR_DELETION" // Indicates the repository has been marked for deletion and should be hidden and unusable.
+	case 4:
+		return "ORG_MIRROR" // Equivalent to MIRROR but for repositories created via organization-level mirroring
+	default:
+		return "UNKNOWN"
+	}
+}

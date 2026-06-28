@@ -16,7 +16,6 @@ import (
 
 func GetUserOrganizations(currentUser Auth.AuthenticatedUser, filters map[string]string) ([]Dto.UserOrganization, error) {
 	logger.Info("[Organization Service] Get User Organizations")
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("Filters: %+v", filters)
 
 	// Validating filters
@@ -84,7 +83,6 @@ func GetUserOrganizations(currentUser Auth.AuthenticatedUser, filters map[string
 
 func CreateOrganization(organizationMetadata Dto.CreateOrganization, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
 	logger.Info("[Organization Service] Create Organization")
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("With dto: %+v", organizationMetadata)
 
 	// TODO: check if user has role to create org and check Features flag (not implement yet)
@@ -159,7 +157,6 @@ func GetOrganizationDetailsByName(orgName string, currentUser Auth.Authenticated
 func DeleteOrganization(orgName string, currentUser Auth.AuthenticatedUser) error {
 	logger.Info("[Organization Service] Delete Organization")
 	logger.Debug("Organization name: %s", orgName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 
 	// Get the org (with detail, for user role checking) if exists
 	logger.Info("Retrieving organization details from database")
@@ -194,7 +191,6 @@ func DeleteOrganization(orgName string, currentUser Auth.AuthenticatedUser) erro
 func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganization, currentUser Auth.AuthenticatedUser) (Dto.Organization, error) {
 	logger.Info("[Organization Service] Update Organization")
 	logger.Debug("Organization name: %s", orgName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 	logger.Debug("With dto: %+v", organizationMetadata)
 
 	// Get the org (with detail, for user role checking) if exists
@@ -277,7 +273,6 @@ func UpdateOrganization(orgName string, organizationMetadata Dto.UpdateOrganizat
 func ListMembersOfOrganization(orgName string, currentUser Auth.AuthenticatedUser) ([]Dto.OrganizationMember, error) {
 	logger.Info("[Organization Service] List Organization Members")
 	logger.Debug("Organization name: %s", orgName)
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
 
 	// Retrieve organization and check if exists
 	logger.Info("Retrieving organization details from database")
@@ -361,7 +356,7 @@ func isUserIsOrgOwner(userId int, organization Models.User) bool {
 			}
 		}
 	}
-	return false // the user isn't in 'owners'
+	return false // the user isn't in 'owners' team
 }
 
 // </editor-fold>

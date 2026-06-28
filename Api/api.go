@@ -43,6 +43,7 @@ func endpointsRegistration() {
 	organizationController()
 	teamController()
 	membersController()
+	repositoryController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
@@ -75,6 +76,10 @@ func authorizedMiddleware(c *gin.Context) {
 	// Add token retried scopes to the context for later use in the endpoint handler
 	c.Set("scopes", validatedToken.Scope)
 	c.Set("authenticatedUserId", validatedToken.AuthorizedUserID)
+
+	// Log
+	Logger.Debug("[Auth] Authenticated User ID: %d", validatedToken.AuthorizedUserID)
+	Logger.Debug("[Auth] Authenticated User Scopes: %s", validatedToken.Scope)
 
 	c.Next()
 }

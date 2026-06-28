@@ -1,6 +1,7 @@
 package Common
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -134,4 +135,38 @@ func getGormTagValue(tag string, key string) string {
 	}
 
 	return ""
+}
+
+/*
+SplitRepositoryNamespaced splits a namespaced repository string into its namespace and name components.
+ex: org/my-image -> 'org' as namespace; 'my-image' as name
+ex: my-image -> ” as namespace; 'my-image' as name
+Returns an error if the input string is not in the expected format.
+*/
+func SplitRepositoryNamespaced(repositoryNamespaced string) (*string, string, error) {
+	repositoryNamespaced = strings.TrimPrefix(repositoryNamespaced, "/")
+
+	parts := strings.SplitN(repositoryNamespaced, "/", 2)
+	if len(parts) == 1 { // repo name only, a non org/user scoped repository
+		if IsValidRepositoryName(parts[0]) {
+			return nil, parts[0], nil
+		}
+	} else {
+		if IsValidOrganizationOrUserName(parts[0]) && IsValidRepositoryName(parts[1]) {
+			return &parts[0], parts[1], nil
+		}
+	}
+
+	return nil, "", fmt.Errorf("invalid repository namespaced %s", repositoryNamespaced)
+}
+
+/*
+InlineIf Return a if the condition is true, otherwise return b.
+This function is generic and can be used with any type.
+*/
+func InlineIf[T any](condition bool, a T, b T) T {
+	if condition {
+		return a
+	}
+	return b
 }

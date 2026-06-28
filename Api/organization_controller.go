@@ -13,8 +13,8 @@ func organizationController() {
 	organization := engine.Group("/api/v1/organization")
 	{
 		organization.Use(authorizedMiddleware)
-		organization.GET("/", listOrganizations)
-		organization.POST("/", createOrganization)
+		organization.GET("", listOrganizations)
+		organization.POST("", createOrganization)
 		organization.GET("/:orgname", getOrganizationDetails)
 		organization.DELETE("/:orgname", deleteOrganization)
 		organization.PATCH("/:orgname", updateOrganization)

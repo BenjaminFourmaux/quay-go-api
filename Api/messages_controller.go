@@ -12,8 +12,8 @@ func messagesController() {
 	messages := engine.Group("/api/v1/messages")
 	{
 		messages.Use(authorizedMiddleware)
-		messages.GET("/", listMessages)
-		messages.POST("/", createMessage)
+		messages.GET("", listMessages)
+		messages.POST("", createMessage)
 		messages.PATCH("/:uuid", updateMessage)
 		messages.DELETE("/:uuid", deleteMessage)
 	}

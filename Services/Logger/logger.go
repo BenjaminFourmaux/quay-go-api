@@ -102,8 +102,8 @@ func Debug(message string, args ...interface{}) {
 	logAt(LevelDebug, fmt.Sprintf(message, args...))
 }
 
-func Info(message string) {
-	logAt(LevelInfo, message)
+func Info(message string, args ...interface{}) {
+	logAt(LevelInfo, fmt.Sprintf(message, args...))
 }
 
 func Success(message string, args ...interface{}) {

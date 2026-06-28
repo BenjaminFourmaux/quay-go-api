@@ -10,7 +10,7 @@ func membersController() {
 	members := engine.Group("/api/v1/organization/:orgname/team/:teamname/members")
 	{
 		members.Use(authorizedMiddleware)
-		members.GET("/", listTeamMembers)
+		members.GET("", listTeamMembers)
 		members.PUT("/:membername", addMemberToTeam)
 		members.DELETE("/:membername", removeMemberFromTeam)
 	}

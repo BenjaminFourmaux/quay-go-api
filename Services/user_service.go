@@ -12,8 +12,6 @@ import (
 
 func GetMeInfo(currentUser Auth.AuthenticatedUser) (Dto.UserMeResponse, error) {
 	logger.Info("[User Service] Get Me Info")
-	logger.Debug("Authenticated user ID: %d", currentUser.ID)
-
 	logger.Info("Retrieving current user with information from database")
 	userModel, err := Repositories.GetUserByIdWithUserInformation(currentUser.ID)
 	if err != nil {
