@@ -18,6 +18,7 @@ func repositoryController() {
 		repository.POST("", createRepository)
 		repository.GET("/*repository", getRepository)
 		repository.PATCH("/*repository", updateRepository)
+		repository.DELETE("/*repository", deleteRepository)
 	}
 }
 
@@ -147,4 +148,32 @@ func updateRepository(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, updatedRepository)
+}
+
+// deleteRepository Delete a repository
+// @Description Delete a repository
+// @Summary Delete a repository
+// @Tags Repository
+// @Accept json
+// @Param repository path string true "Name of the repository"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository} [delete]
+func deleteRepository(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	repositoryName := c.Param("repository")
+
+	err := Services.DeleteRepository(repositoryName, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

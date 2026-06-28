@@ -1003,6 +1003,32 @@ paths:
       tags:
       - Repository
   /api/v1/repository/{repository}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a repository
+      parameters:
+      - description: Name of the repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a repository
+      tags:
+      - Repository
     get:
       description: Get a repository
       parameters:

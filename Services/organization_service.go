@@ -356,7 +356,7 @@ func isUserIsOrgOwner(userId int, organization Models.User) bool {
 			}
 		}
 	}
-	return false // the user isn't in 'owners'
+	return false // the user isn't in 'owners' team
 }
 
 // </editor-fold>

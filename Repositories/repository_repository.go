@@ -112,6 +112,54 @@ func CreateRepositoryTransaction(repository Models.Repository, userId int) (*Mod
 	return &repository, err
 }
 
+func DeleteRepositoryTransaction(repository Models.Repository) error {
+	err := Database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Remove tags linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.Tag{}).Error; err != nil {
+			return err
+		}
+
+		// 2. Remove manifests linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.Manifest{}).Error; err != nil {
+			return err
+		}
+
+		// 3. Remove stars linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.Star{}).Error; err != nil {
+			return err
+		}
+
+		// 4. Remove permissions linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.RepositoryPermission{}).Error; err != nil {
+			return err
+		}
+
+		// 5. Remove action counts linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.RepositoryActionCount{}).Error; err != nil {
+			return err
+		}
+
+		// 6. Remove search score linked to the repository
+		if err := tx.Where("repository_id = ?", repository.ID).Delete(&Models.RepositorySearchScore{}).Error; err != nil {
+			return err
+		}
+
+		// 7. Remove the repository
+		deleteResult := tx.Where("id = ?", repository.ID).Delete(&Models.Repository{})
+		if deleteResult.Error != nil {
+			return deleteResult.Error
+		}
+
+		if deleteResult.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		return nil
+	})
+
+	return err
+}
+
 func UpdateRepository(repository Models.Repository) (*Models.Repository, error) {
 	err := Database.DB.Preload("Kind").Preload("NamespaceUser").Save(&repository).Error
 	return &repository, err

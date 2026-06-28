@@ -424,6 +424,55 @@ func UpdateRepository(repositoryNamespaced string, repositoryMetadata Dto.Update
 	return updatedRepository, nil
 }
 
+func DeleteRepository(repositoryNamespaced string, currentUser Auth.AuthenticatedUser) error {
+	logger.Info("[Repository Service] Delete Repository")
+	logger.Debug("Updating repository: %s", repositoryNamespaced)
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Delete repository from DB
+	err = Repositories.DeleteRepositoryTransaction(repoExist)
+	if err != nil {
+		logger.Error("Error deleting repository: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 // <editor-fold desc="Private Methods"
 
 func checkRepositoryUserPermission(repositoryId int, userId int, role string) bool {
