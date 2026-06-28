@@ -362,6 +362,68 @@ func GetRepository(repositoryNamespaced string, filters map[string]string, curre
 	return repository, nil
 }
 
+func UpdateRepository(repositoryNamespaced string, repositoryMetadata Dto.UpdateRepository, currentUser Auth.AuthenticatedUser) (Dto.Repository, error) {
+	logger.Info("[Repository Service] Update Repository")
+	logger.Debug("Updating repository: %s", repositoryNamespaced)
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Dto.Repository{}, Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Dto.Repository{}, Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return Dto.Repository{}, err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Dto.Repository{}, Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return Dto.Repository{}, err
+		}
+	}
+
+	// Update model
+	repoExist.Description = repositoryMetadata.Description
+
+	updatedRepositoryModel, err := Repositories.UpdateRepository(repoExist)
+	if err != nil {
+		logger.Error("Error updating repository: %s", err.Error())
+		return Dto.Repository{}, err
+	}
+
+	// Convert model to dto
+	updatedRepository := Dto.Repository{
+		Name:        updatedRepositoryModel.Name,
+		Namespace:   Common.InlineIf(updatedRepositoryModel.NamespaceUserId != nil, updatedRepositoryModel.NamespaceUser.Username, ""),
+		Description: updatedRepositoryModel.Description,
+		Kind:        Common.InlineIf(updatedRepositoryModel.KindId == 1, "image", "application"),
+		State:       Common.MapRepositoryStateStr(updatedRepositoryModel.State),
+		IsPublic:    updatedRepositoryModel.VisibilityId == 1,
+		IsStarred:   len(updatedRepositoryModel.Stars) > 0,
+	}
+
+	return updatedRepository, nil
+}
+
 // <editor-fold desc="Private Methods"
 
 func checkRepositoryUserPermission(repositoryId int, userId int, role string) bool {

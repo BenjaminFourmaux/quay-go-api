@@ -49,3 +49,7 @@ type RepositoryStats struct {
 	Date  time.Time `json:"date"` // In format: yyyy-mm-dd
 	Count int       `json:"count"`
 }
+
+type UpdateRepository struct {
+	Description string `json:"description"`
+}

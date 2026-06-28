@@ -111,3 +111,8 @@ func CreateRepositoryTransaction(repository Models.Repository, userId int) (*Mod
 
 	return &repository, err
 }
+
+func UpdateRepository(repository Models.Repository) (*Models.Repository, error) {
+	err := Database.DB.Preload("Kind").Preload("NamespaceUser").Save(&repository).Error
+	return &repository, err
+}

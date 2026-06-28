@@ -3,10 +3,11 @@ package Api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
+	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Services"
 	"quay-go-api/Services/Auth"
+	"strings"
 )
 
 func repositoryController() {
@@ -16,6 +17,7 @@ func repositoryController() {
 		repository.GET("", listRepositories)
 		repository.POST("", createRepository)
 		repository.GET("/*repository", getRepository)
+		repository.PATCH("/*repository", updateRepository)
 	}
 }
 
@@ -110,4 +112,39 @@ func getRepository(c *gin.Context) {
 		return
 	}
 	c.JSON(200, repository)
+}
+
+// updateRepository Update repository details
+// @Description Update repository details
+// @Summary Update repository details
+// @Tags Repository
+// @Accept json
+// @Param repository path string true "Name of the repository"
+// @Param message body Dto.UpdateRepository true "Repository details to change"
+// @Success 200 {object} Dto.Repository
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository} [patch]
+func updateRepository(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	repositoryName := c.Param("repository")
+
+	var updateRepository Dto.UpdateRepository
+	if err := c.BindJSON(&updateRepository); err != nil {
+		throwError(c, Errors.RequestBodyInvalid())
+		return
+	}
+
+	updatedRepository, err := Services.UpdateRepository(repositoryName, updateRepository, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, updatedRepository)
 }

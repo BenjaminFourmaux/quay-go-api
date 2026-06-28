@@ -144,6 +144,8 @@ ex: my-image -> ” as namespace; 'my-image' as name
 Returns an error if the input string is not in the expected format.
 */
 func SplitRepositoryNamespaced(repositoryNamespaced string) (*string, string, error) {
+	repositoryNamespaced = strings.TrimPrefix(repositoryNamespaced, "/")
+
 	parts := strings.SplitN(repositoryNamespaced, "/", 2)
 	if len(parts) == 1 { // repo name only, a non org/user scoped repository
 		if IsValidRepositoryName(parts[0]) {

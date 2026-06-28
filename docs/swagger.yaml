@@ -228,6 +228,11 @@ definitions:
       tag_expiration_s:
         type: integer
     type: object
+  Dto.UpdateRepository:
+    properties:
+      description:
+        type: string
+    type: object
   Dto.UpdateTeam:
     properties:
       description:
@@ -1034,6 +1039,40 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a repository
+      tags:
+      - Repository
+    patch:
+      consumes:
+      - application/json
+      description: Update repository details
+      parameters:
+      - description: Name of the repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Repository details to change
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateRepository'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Repository'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update repository details
       tags:
       - Repository
   /api/v1/users/me:
