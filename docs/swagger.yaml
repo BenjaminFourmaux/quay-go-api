@@ -1143,6 +1143,39 @@ paths:
       summary: List teams permission on a repository
       tags:
       - Permission
+  /api/v1/repository/{repository}/permissions/user:
+    get:
+      description: List users permission on a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.RepositoryPermission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List users permission on a repository
+      tags:
+      - Permission
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information
