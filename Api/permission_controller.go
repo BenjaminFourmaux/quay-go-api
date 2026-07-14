@@ -16,6 +16,8 @@ func permissionController() {
 	registerRepositorySubRoute(http.MethodGet, "permissions/team/:teamname", getTeamRepositoryPermission)
 	registerRepositorySubRoute(http.MethodPatch, "permissions/user/:username", updateUserRepositoryPermission)
 	registerRepositorySubRoute(http.MethodPatch, "permissions/team/:teamname", updateTeamRepositoryPermission)
+	registerRepositorySubRoute(http.MethodDelete, "permissions/user/:username", deleteUserRepositoryPermission)
+	registerRepositorySubRoute(http.MethodDelete, "permissions/team/:teamname", deleteTeamRepositoryPermission)
 }
 
 // listRepositoryTeamPermission List teams permission on a repository
@@ -198,4 +200,62 @@ func updateTeamRepositoryPermission(c *gin.Context, repositoryNamespaced string)
 		return
 	}
 	c.JSON(http.StatusOK, updatedPermission)
+}
+
+// deleteUserRepositoryPermission Remove a user repository permission
+// @Description Remove a user repository permission
+// @Summary Remove a user repository permission
+// @Tags Permission
+// @Accept json
+// @Param repository path string true "Name of the repository"
+// @Param username path string true "Username of the user"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository}/permissions/user/{username} [delete]
+func deleteUserRepositoryPermission(c *gin.Context, repositoryNamespace string) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	username := c.Param("username")
+
+	err := Services.DeleteUserRepositoryPermission(repositoryNamespace, username, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// deleteTeamRepositoryPermission Remove a team repository permission
+// @Description Remove a team repository permission
+// @Summary Remove a team repository permission
+// @Tags Permission
+// @Accept json
+// @Param repository path string true "Name of the repository"
+// @Param teamname path string true "Name of the team"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository}/permissions/team/{teamname} [delete]
+func deleteTeamRepositoryPermission(c *gin.Context, repositoryNamespace string) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	teamname := c.Param("teamname")
+
+	err := Services.DeleteTeamRepositoryPermission(repositoryNamespace, teamname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

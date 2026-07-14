@@ -63,3 +63,8 @@ func UpdateRepositoryPermission(permission Models.RepositoryPermission) error {
 	err := Database.DB.Model(&permission).Updates(&permission).Error
 	return err
 }
+
+func DeleteRepositoryPermission(permission Models.RepositoryPermission) error {
+	err := Database.DB.Delete(&permission).Error
+	return err
+}

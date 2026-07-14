@@ -28,7 +28,7 @@ func listRepositoryPermission(repositoryNamespaced string, kind string, currentU
 	logger.Debug("With kind filters: %s", kind)
 
 	// Split repositoryNamespaced into namespace and name
-	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
 	if err != nil {
 		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
 		return []Dto.RepositoryPermission{}, Errors.RepositoryInvalid(repositoryNamespaced)
@@ -50,7 +50,7 @@ func listRepositoryPermission(repositoryNamespaced string, kind string, currentU
 	}
 
 	// Check if the repository exits
-	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -100,14 +100,14 @@ func GetTeamRepositoryPermission(repositoryNamespaced string, teamname string, c
 /*
 GetRepositoryPermission Wrapper for getting a user or team permission on a repository
 */
-func GetRepositoryPermission(repositoryNamespaced string, username string, kind string, currentUser *Auth.AuthenticatedUser) (Dto.RepositoryPermission, error) {
+func GetRepositoryPermission(repositoryNamespaced string, name string, kind string, currentUser *Auth.AuthenticatedUser) (Dto.RepositoryPermission, error) {
 	logger.Info("[Permission Service] Get Repository Permission")
 	logger.Debug("Repository: %s", repositoryNamespaced)
 	logger.Debug("With kind filters: %s", kind)
-	logger.Debug("With name filters: %s", username)
+	logger.Debug("With name filters: %s", name)
 
 	// Split repositoryNamespaced into namespace and name
-	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
 	if err != nil {
 		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
 		return Dto.RepositoryPermission{}, Errors.RepositoryInvalid(repositoryNamespaced)
@@ -129,7 +129,7 @@ func GetRepositoryPermission(repositoryNamespaced string, username string, kind 
 	}
 
 	// Check if the repository exits
-	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -144,24 +144,24 @@ func GetRepositoryPermission(repositoryNamespaced string, username string, kind 
 	// Get User or Team Permission
 	var permissionModel Models.RepositoryPermission
 	if kind == "user" {
-		permissionModel, err = Repositories.GetUserRepositoryPermissionByUsername(repoExist.ID, username)
+		permissionModel, err = Repositories.GetUserRepositoryPermissionByUsername(repoExist.ID, name)
 		if err != nil {
 			switch err.Error() {
 			case "record not found":
-				logger.Warning("No user permission found for '%s': '%s'", kind, username)
-				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, username)
+				logger.Warning("No user permission found for '%s': '%s'", kind, name)
+				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, name)
 			default:
 				logger.Error("Error retrieving repository permission from database: %s", err.Error())
 				return Dto.RepositoryPermission{}, err
 			}
 		}
 	} else {
-		permissionModel, err = Repositories.GetTeamRepositoryPermissionByTeamname(repoExist.ID, username)
+		permissionModel, err = Repositories.GetTeamRepositoryPermissionByTeamname(repoExist.ID, name)
 		if err != nil {
 			switch err.Error() {
 			case "record not found":
-				logger.Warning("No team permission found for '%s': '%s'", kind, username)
-				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, username)
+				logger.Warning("No team permission found for '%s': '%s'", kind, name)
+				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, name)
 			default:
 				logger.Error("Error retrieving repository permission from database: %s", err.Error())
 				return Dto.RepositoryPermission{}, err
@@ -186,11 +186,11 @@ func UpdateTeamRepositoryPermission(repositoryNamespaced string, teamname string
 /*
 updateRepositoryPermission Wrapper for update repository permission for a user or team
 */
-func updateRepositoryPermission(repositoryNamespaced string, username string, updatePermission Dto.UpdateRepositoryPermission, kind string, currentUser *Auth.AuthenticatedUser) (Dto.RepositoryPermission, error) {
+func updateRepositoryPermission(repositoryNamespaced string, name string, updatePermission Dto.UpdateRepositoryPermission, kind string, currentUser *Auth.AuthenticatedUser) (Dto.RepositoryPermission, error) {
 	logger.Info("[Permission Service] Update Repository Permission")
 	logger.Debug("Repository: %s", repositoryNamespaced)
 	logger.Debug("With kind filters: %s", kind)
-	logger.Debug("With name filters: %s", username)
+	logger.Debug("With name filters: %s", name)
 	logger.Debug("With updatePermission: %s", updatePermission.Role)
 
 	// Validate inputs
@@ -200,7 +200,7 @@ func updateRepositoryPermission(repositoryNamespaced string, username string, up
 	}
 
 	// Split repositoryNamespaced into namespace and name
-	namespace, name, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
 	if err != nil {
 		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
 		return Dto.RepositoryPermission{}, Errors.RepositoryInvalid(repositoryNamespaced)
@@ -222,7 +222,7 @@ func updateRepositoryPermission(repositoryNamespaced string, username string, up
 	}
 
 	// Check if the repository exits
-	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(name, namespace)
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -237,24 +237,24 @@ func updateRepositoryPermission(repositoryNamespaced string, username string, up
 	// Get User or Team Permission
 	var permissionModel Models.RepositoryPermission
 	if kind == "user" {
-		permissionModel, err = Repositories.GetUserRepositoryPermissionByUsername(repoExist.ID, username)
+		permissionModel, err = Repositories.GetUserRepositoryPermissionByUsername(repoExist.ID, name)
 		if err != nil {
 			switch err.Error() {
 			case "record not found":
-				logger.Warning("No user permission found for '%s': '%s'", kind, username)
-				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, username)
+				logger.Warning("No user permission found for '%s': '%s'", kind, name)
+				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, name)
 			default:
 				logger.Error("Error retrieving repository permission from database: %s", err.Error())
 				return Dto.RepositoryPermission{}, err
 			}
 		}
 	} else {
-		permissionModel, err = Repositories.GetTeamRepositoryPermissionByTeamname(repoExist.ID, username)
+		permissionModel, err = Repositories.GetTeamRepositoryPermissionByTeamname(repoExist.ID, name)
 		if err != nil {
 			switch err.Error() {
 			case "record not found":
-				logger.Warning("No team permission found for '%s': '%s'", kind, username)
-				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, username)
+				logger.Warning("No team permission found for '%s': '%s'", kind, name)
+				return Dto.RepositoryPermission{}, Errors.PermissionNotFound(kind, name)
 			default:
 				logger.Error("Error retrieving repository permission from database: %s", err.Error())
 				return Dto.RepositoryPermission{}, err
@@ -275,4 +275,93 @@ func updateRepositoryPermission(repositoryNamespaced string, username string, up
 	permission := Common.ConvertRepositoryPermissionModelToDto(permissionModel, kind)
 
 	return permission, nil
+}
+
+func DeleteUserRepositoryPermission(repositoryNamespaced string, username string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRepositoryPermission(repositoryNamespaced, username, "user", currentUser)
+}
+
+func DeleteTeamRepositoryPermission(repositoryNamespaced string, teamname string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRepositoryPermission(repositoryNamespaced, teamname, "team", currentUser)
+}
+
+/*
+deleteRepositoryPermission Wrapper for delete repository permission for a user or team
+*/
+func deleteRepositoryPermission(repositoryNamespaced string, name string, kind string, currentUser *Auth.AuthenticatedUser) error {
+	logger.Info("[Permission Service] Delete Repository Permission")
+	logger.Debug("Repository: %s", repositoryNamespaced)
+	logger.Debug("With kind filters: %s", kind)
+	logger.Debug("With name filters: %s", name)
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Get User or Team Permission
+	var permissionModel Models.RepositoryPermission
+	if kind == "user" {
+		permissionModel, err = Repositories.GetUserRepositoryPermissionByUsername(repoExist.ID, name)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user permission found for '%s': '%s'", kind, name)
+				return Errors.PermissionNotFound(kind, name)
+			default:
+				logger.Error("Error retrieving repository permission from database: %s", err.Error())
+				return err
+			}
+		}
+	} else {
+		permissionModel, err = Repositories.GetTeamRepositoryPermissionByTeamname(repoExist.ID, name)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No team permission found for '%s': '%s'", kind, name)
+				return Errors.PermissionNotFound(kind, name)
+			default:
+				logger.Error("Error retrieving repository permission from database: %s", err.Error())
+				return err
+			}
+		}
+	}
+
+	// Delete permission from DB
+	err = Repositories.DeleteRepositoryPermission(permissionModel)
+	if err != nil {
+		logger.Error("Error deleting repository permission: %s", err.Error())
+		return err
+	}
+	return nil
 }

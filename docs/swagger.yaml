@@ -1153,6 +1153,37 @@ paths:
       tags:
       - Permission
   /api/v1/repository/{repository}/permissions/team/{teamname}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a team repository permission
+      parameters:
+      - description: Name of the repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Name of the team
+        in: path
+        name: teamname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a team repository permission
+      tags:
+      - Permission
     get:
       description: Get a team's permission on a repository
       parameters:
@@ -1261,6 +1292,37 @@ paths:
       tags:
       - Permission
   /api/v1/repository/{repository}/permissions/user/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a user repository permission
+      parameters:
+      - description: Name of the repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Username of the user
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a user repository permission
+      tags:
+      - Permission
     get:
       description: Get a user's permission on a repository
       parameters:
