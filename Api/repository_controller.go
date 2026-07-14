@@ -10,16 +10,48 @@ import (
 	"strings"
 )
 
+// repositorySubRouteHandlers maps a URL suffix (e.g. "/permissions/team") to a
+// handler receiving the parsed repository name (namespace/repository or just
+// repository). Gin only allows a single "*wildcard" per HTTP method on a given
+// path, so sub-resources under /repository/... (like permissions) register
+// themselves here instead of declaring their own conflicting wildcard route.
+var repositorySubRouteHandlers = map[string]func(c *gin.Context, repositoryNamespaced string){}
+
+// registerRepositorySubRoute lets other controllers (e.g. permission_controller.go)
+// plug additional GET endpoints under /api/v1/repository/{repository}/... without
+// creating a conflicting Gin wildcard route.
+func registerRepositorySubRoute(suffix string, handler func(c *gin.Context, repositoryNamespaced string)) {
+	repositorySubRouteHandlers[suffix] = handler
+}
+
 func repositoryController() {
 	repository := engine.Group("/api/v1/repository")
 	{
 		repository.Use(authorizedMiddleware)
 		repository.GET("", listRepositories)
 		repository.POST("", createRepository)
-		repository.GET("/*repository", getRepository)
+		repository.GET("/*repository", dispatchRepositoryGet)
 		repository.PATCH("/*repository", updateRepository)
 		repository.DELETE("/*repository", deleteRepository)
 	}
+}
+
+// dispatchRepositoryGet inspects the wildcard path captured after /repository/
+// and routes it to a registered sub-route handler (e.g. permissions) when its
+// suffix matches, falling back to plain repository retrieval otherwise. This
+// allows both "myglobalrepo/permissions/team" and "myorg/myrepo/permissions/team"
+// to be handled without needing one route per repository name shape.
+func dispatchRepositoryGet(c *gin.Context) {
+	path := strings.TrimPrefix(c.Param("repository"), "/")
+
+	for suffix, handler := range repositorySubRouteHandlers {
+		if repositoryNamespaced, ok := strings.CutSuffix(path, suffix); ok {
+			handler(c, repositoryNamespaced)
+			return
+		}
+	}
+
+	getRepository(c, path)
 }
 
 // listRepositories List repositories
@@ -95,14 +127,12 @@ func createRepository(c *gin.Context) {
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/repository/{repository} [get]
-func getRepository(c *gin.Context) {
+func getRepository(c *gin.Context, repositoryNamespaced string) {
 	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.ReadRepo})
 	if hasScopeErr != nil {
 		throwError(c, hasScopeErr)
 		return
 	}
-
-	repositoryNamespaced := strings.TrimPrefix(c.Param("repository"), "/")
 
 	// Get filters from query params
 	filters := extractFilters(c)
@@ -134,7 +164,7 @@ func updateRepository(c *gin.Context) {
 		return
 	}
 
-	repositoryName := c.Param("repository")
+	repositoryName := strings.TrimPrefix(c.Param("repository"), "/")
 
 	var updateRepository Dto.UpdateRepository
 	if err := c.BindJSON(&updateRepository); err != nil {
@@ -168,7 +198,7 @@ func deleteRepository(c *gin.Context) {
 		return
 	}
 
-	repositoryName := c.Param("repository")
+	repositoryName := strings.TrimPrefix(c.Param("repository"), "/")
 
 	err := Services.DeleteRepository(repositoryName, currentUser)
 	if err != nil {

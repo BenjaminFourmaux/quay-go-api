@@ -1210,6 +1210,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/repository/{repository}/permissions/team": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List teams permission on a repository",
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "List teams permission on a repository",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RepositoryPermission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -1544,6 +1596,20 @@ const docTemplate = `{
                 },
                 "trust_enabled": {
                     "type": "boolean"
+                }
+            }
+        },
+        "Dto.RepositoryPermission": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
