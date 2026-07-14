@@ -12,7 +12,8 @@ func GetRepositoryUserPermission(repositoryId int, userId int) (Models.Repositor
 }
 
 /*
-ListRepositoryPermissions Return list of user or team repository permissions by repository ID
+ListRepositoryPermissions Return list of user or team repository permissions by repository ID.
+Parameter 'kind' can be empty for get both user and team permissions
 */
 func ListRepositoryPermissions(repositoryId int, kind string) ([]Models.RepositoryPermission, error) {
 	var permissions []Models.RepositoryPermission
@@ -21,7 +22,7 @@ func ListRepositoryPermissions(repositoryId int, kind string) ([]Models.Reposito
 	var whereKind string
 	if kind == "team" {
 		whereKind = "team_id IS NOT NULL"
-	} else {
+	} else if kind == "user" {
 		whereKind = "user_id IS NOT NULL"
 	}
 
@@ -34,4 +35,26 @@ func ListRepositoryPermissions(repositoryId int, kind string) ([]Models.Reposito
 		Find(&permissions).
 		Error
 	return permissions, err
+}
+
+func GetUserRepositoryPermissionByUsername(repositoryId int, username string) (Models.RepositoryPermission, error) {
+	var permission Models.RepositoryPermission
+	err := Database.DB.
+		Preload("Role").
+		InnerJoins("User", Database.DB.Where(&Models.User{Username: username})).
+		Where("repositorypermission.repository_id = ?", repositoryId).
+		First(&permission).
+		Error
+	return permission, err
+}
+
+func GetTeamRepositoryPermissionByTeamname(repositoryId int, teamname string) (Models.RepositoryPermission, error) {
+	var permission Models.RepositoryPermission
+	err := Database.DB.
+		Preload("Role").
+		InnerJoins("Team", Database.DB.Where(&Models.Team{Name: teamname})).
+		Where("repositorypermission.repository_id = ?", repositoryId).
+		First(&permission).
+		Error
+	return permission, err
 }

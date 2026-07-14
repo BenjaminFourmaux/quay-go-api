@@ -1,6 +1,7 @@
 package Errors
 
 import (
+	"fmt"
 	"net/http"
 	"quay-go-api/Services/Auth"
 	"strings"
@@ -341,6 +342,18 @@ func UserNotExists(username string) *ApiError {
 	}
 }
 
+func UserNotFound(username string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_not_found",
+				Message: "The user '" + username + "' does not exist",
+			},
+		},
+	}
+}
+
 // </editor-fold>
 
 // <editor-fold desc="Repository Errors">
@@ -424,6 +437,22 @@ func RepositoryAlreadyExists() *ApiError {
 			Error: ErrorDetails{
 				Code:    "repository_already_exists",
 				Message: "Repository already exists",
+			},
+		},
+	}
+}
+
+// </editor-fold>
+
+// <editor-fold desc="Permission Errors">
+
+func PermissionNotFound(kind string, name string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "permission_not_found",
+				Message: fmt.Sprintf("Permission not found for '%s': '%s'", kind, name),
 			},
 		},
 	}

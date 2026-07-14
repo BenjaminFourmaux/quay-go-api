@@ -163,6 +163,9 @@ definitions:
     properties:
       avatar:
         $ref: '#/definitions/Dto.Avatar'
+      isRobot:
+        description: Optional fields
+        type: boolean
       name:
         type: string
       role:
@@ -1143,6 +1146,42 @@ paths:
       summary: List teams permission on a repository
       tags:
       - Permission
+  /api/v1/repository/{repository}/permissions/team/{teamname}:
+    get:
+      description: Get a team's permission on a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Team name
+        in: path
+        name: teamname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.RepositoryPermission'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a team's permission on a repository
+      tags:
+      - Permission
   /api/v1/repository/{repository}/permissions/user:
     get:
       description: List users permission on a repository
@@ -1174,6 +1213,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List users permission on a repository
+      tags:
+      - Permission
+  /api/v1/repository/{repository}/permissions/user/{username}:
+    get:
+      description: Get a user's permission on a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.RepositoryPermission'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a user's permission on a repository
       tags:
       - Permission
   /api/v1/users/me:
