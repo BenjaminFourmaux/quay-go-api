@@ -138,6 +138,14 @@ func ValidateCreateRepository(repositoryMetadata Dto.CreateRepository) error {
 	return nil
 }
 
+func ValidateUpdateRepositoryPermission(repositoryMetadata Dto.UpdateRepositoryPermission) error {
+	// Validate role
+	if !IsValidRepositoryPermissionRole(repositoryMetadata.Role) {
+		return Errors.RepositoryPermissionRoleInvalid(repositoryMetadata.Role)
+	}
+	return nil
+}
+
 /*
 IsValidRepositoryKind cheks if the kind is valid (e.g., "image", or "application")
 */
@@ -159,4 +167,11 @@ func IsValidRepositoryName(repositoryName string) bool {
 		return false
 	}
 	return true
+}
+
+/*
+IsValidRepositoryPermissionRole checks if the repository permission role is valid (e.g. "admin" or "write" or "read")
+*/
+func IsValidRepositoryPermissionRole(role string) bool {
+	return role == "admin" || role == "write" || role == "read"
 }

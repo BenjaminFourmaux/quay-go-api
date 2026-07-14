@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-const maxDaysIn3Months = 90
-
 func ListRepositories(filters map[string]string, currentUser *Auth.AuthenticatedUser) ([]Dto.Repository, error) {
 	logger.Info("[Repository Service] List Repositories")
 	logger.Debug("With filters: %+v", filters)
@@ -157,7 +155,7 @@ func CreateRepository(repositoryMetadata Dto.CreateRepository, currentUser Auth.
 		BadgeToken:   uuid.New().String(),                                       // Generate a new UUID for the badge token
 		KindId:       Common.InlineIf(repositoryMetadata.Kind == "image", 1, 2), // 1 = image, 2 = application
 		TrustEnabled: false,
-		State:        0, // NORMAL
+		State:        0, // 0 = NORMAL
 	}
 
 	// Add Namespace if specified
@@ -339,7 +337,7 @@ func GetRepository(repositoryNamespaced string, filters map[string]string, curre
 
 			// Fill in any missing stats with zeros.
 			now := time.Now().UTC()
-			for day := 1; day < maxDaysIn3Months; day++ {
+			for day := 1; day < Common.MaxDaysIn3Months; day++ {
 				dayDate := now.AddDate(0, 0, -day)
 				key := fmt.Sprintf("%d/%d", dayDate.Month(), dayDate.Day())
 				if _, ok := foundDates[key]; !ok {

@@ -88,3 +88,19 @@ func ConvertTeamModelToDto(teamModel Models.Team, userId int, userScopes []Auth.
 		IsSynced:     false, // TODO: get if the team is synced
 	}
 }
+
+func ConvertRepositoryPermissionModelToDto(repositoryPermissionModel Models.RepositoryPermission, kind string) Dto.RepositoryPermission {
+	permission := Dto.RepositoryPermission{
+		Role: repositoryPermissionModel.Role.Name,
+	}
+
+	if kind == "user" {
+		permission.Name = repositoryPermissionModel.User.Username
+		permission.Avatar = Avatar.GetAvatarForUser(*repositoryPermissionModel.User)
+		permission.IsRobot = &repositoryPermissionModel.User.Robot
+	} else if kind == "team" {
+		permission.Name = repositoryPermissionModel.Team.Name
+		permission.Avatar = Avatar.GetAvatarForTeam(*repositoryPermissionModel.Team)
+	}
+	return permission
+}

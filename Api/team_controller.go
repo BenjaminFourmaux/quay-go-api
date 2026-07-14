@@ -122,7 +122,7 @@ func getOrganizationTeam(c *gin.Context) {
 // @Accept json
 // @Param orgname path string true "Organization name"
 // @Param teamname path string true "Team name to update"
-// @Param team body Dto.UpdateTeam true "Team description and role to update"
+// @Param update body Dto.UpdateTeam true "Team description and role to update"
 // @Success 200 {object} Dto.Team
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"

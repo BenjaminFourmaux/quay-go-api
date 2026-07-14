@@ -10,16 +10,109 @@ import (
 	"strings"
 )
 
+// repositorySubRoutePattern describes a sub-resource path nested under a
+// repository (e.g. "permissions/team/:team"), split into segments so it can
+// be matched against the trailing segments of the captured wildcard path.
+type repositorySubRoutePattern struct {
+	segments []string
+	handler  func(c *gin.Context, repositoryNamespaced string)
+}
+
+// repositorySubRoutes maps an HTTP method to the sub-resource patterns
+// registered for it. Gin only allows a single trailing "*wildcard" per HTTP
+// method under a given path, so sub-resources (permissions, and any future
+// ones) register themselves here instead of declaring their own conflicting
+// wildcard route.
+var repositorySubRoutes = map[string][]repositorySubRoutePattern{}
+
+// registerRepositorySubRoute lets other controllers (e.g. permission_controller.go)
+// plug additional endpoints under /api/v1/repository/{repository}/... for any
+// HTTP method, without creating a conflicting Gin wildcard route.
+//
+// pattern uses the same ":name" syntax as Gin for trailing dynamic segments,
+// e.g. "permissions/team" or "permissions/team/:team". Captured values are
+// available via c.Param(name) exactly like a normal Gin route.
+func registerRepositorySubRoute(method string, pattern string, handler func(c *gin.Context, repositoryNamespaced string)) {
+	segments := strings.Split(strings.Trim(pattern, "/"), "/")
+	repositorySubRoutes[method] = append(repositorySubRoutes[method], repositorySubRoutePattern{
+		segments: segments,
+		handler:  handler,
+	})
+}
+
 func repositoryController() {
 	repository := engine.Group("/api/v1/repository")
 	{
 		repository.Use(authorizedMiddleware)
 		repository.GET("", listRepositories)
 		repository.POST("", createRepository)
-		repository.GET("/*repository", getRepository)
-		repository.PATCH("/*repository", updateRepository)
-		repository.DELETE("/*repository", deleteRepository)
+		repository.Any("/*repository", dispatchRepository)
 	}
+}
+
+// dispatchRepository inspects the wildcard path captured after /repository/
+// and routes it to a registered sub-route handler (e.g. permissions) when its
+// trailing segments match, falling back to plain repository CRUD otherwise.
+// This allows both "myglobalrepo/permissions/team/myteam" and
+// "myorg/myrepo/permissions/team/myteam" to be handled - for any HTTP verb -
+// without needing one route per repository name shape.
+func dispatchRepository(c *gin.Context) {
+	path := strings.Trim(c.Param("repository"), "/")
+	pathSegments := strings.Split(path, "/")
+
+	if dispatchToSubRoute(c, pathSegments) {
+		return
+	}
+
+	switch c.Request.Method {
+	case http.MethodGet:
+		getRepository(c, path)
+	case http.MethodPatch:
+		updateRepository(c, path)
+	case http.MethodDelete:
+		deleteRepository(c, path)
+	default:
+		c.Status(http.StatusMethodNotAllowed)
+	}
+}
+
+// dispatchToSubRoute tries every possible split point between the repository
+// name and a registered sub-route's segments (since the repository name
+// itself may be 1 segment - "myrepo" - or 2 - "myorg/myrepo"). It returns true
+// once a pattern matching the current HTTP method has consumed the trailing
+// segments.
+func dispatchToSubRoute(c *gin.Context, pathSegments []string) bool {
+	for _, pattern := range repositorySubRoutes[c.Request.Method] {
+		if len(pattern.segments) >= len(pathSegments) {
+			continue
+		}
+
+		splitAt := len(pathSegments) - len(pattern.segments)
+		if !matchSubRouteSegments(c, pattern.segments, pathSegments[splitAt:]) {
+			continue
+		}
+
+		repositoryNamespaced := strings.Join(pathSegments[:splitAt], "/")
+		pattern.handler(c, repositoryNamespaced)
+		return true
+	}
+
+	return false
+}
+
+// matchSubRouteSegments compares pattern segments against the actual trailing
+// path segments, capturing ":name" segments as Gin params along the way.
+func matchSubRouteSegments(c *gin.Context, pattern []string, actual []string) bool {
+	for i, segment := range pattern {
+		if strings.HasPrefix(segment, ":") {
+			c.Params = append(c.Params, gin.Param{Key: segment[1:], Value: actual[i]})
+			continue
+		}
+		if segment != actual[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // listRepositories List repositories
@@ -95,14 +188,12 @@ func createRepository(c *gin.Context) {
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/repository/{repository} [get]
-func getRepository(c *gin.Context) {
+func getRepository(c *gin.Context, repositoryNamespaced string) {
 	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.ReadRepo})
 	if hasScopeErr != nil {
 		throwError(c, hasScopeErr)
 		return
 	}
-
-	repositoryNamespaced := strings.TrimPrefix(c.Param("repository"), "/")
 
 	// Get filters from query params
 	filters := extractFilters(c)
@@ -121,20 +212,18 @@ func getRepository(c *gin.Context) {
 // @Tags Repository
 // @Accept json
 // @Param repository path string true "Name of the repository"
-// @Param message body Dto.UpdateRepository true "Repository details to change"
+// @Param update body Dto.UpdateRepository true "Repository details to change"
 // @Success 200 {object} Dto.Repository
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/repository/{repository} [patch]
-func updateRepository(c *gin.Context) {
+func updateRepository(c *gin.Context, repositoryName string) {
 	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
 	if hasScopeErr != nil {
 		throwError(c, hasScopeErr)
 		return
 	}
-
-	repositoryName := c.Param("repository")
 
 	var updateRepository Dto.UpdateRepository
 	if err := c.BindJSON(&updateRepository); err != nil {
@@ -161,14 +250,12 @@ func updateRepository(c *gin.Context) {
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/repository/{repository} [delete]
-func deleteRepository(c *gin.Context) {
+func deleteRepository(c *gin.Context, repositoryName string) {
 	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.AdminRepo})
 	if hasScopeErr != nil {
 		throwError(c, hasScopeErr)
 		return
 	}
-
-	repositoryName := c.Param("repository")
 
 	err := Services.DeleteRepository(repositoryName, currentUser)
 	if err != nil {
