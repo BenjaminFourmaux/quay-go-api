@@ -65,3 +65,16 @@ func MapRepositoryStateStr(stateId int) string {
 		return "UNKNOWN"
 	}
 }
+
+func GetRoleIdFromRoleName(roleName string) int {
+	switch roleName {
+	case "admin":
+		return 1
+	case "write":
+		return 2
+	case "read":
+		return 3
+	default:
+		return 0
+	}
+}

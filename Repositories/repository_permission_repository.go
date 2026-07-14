@@ -58,3 +58,8 @@ func GetTeamRepositoryPermissionByTeamname(repositoryId int, teamname string) (M
 		Error
 	return permission, err
 }
+
+func UpdateRepositoryPermission(permission Models.RepositoryPermission) error {
+	err := Database.DB.Model(&permission).Updates(&permission).Error
+	return err
+}

@@ -212,7 +212,7 @@ func getRepository(c *gin.Context, repositoryNamespaced string) {
 // @Tags Repository
 // @Accept json
 // @Param repository path string true "Name of the repository"
-// @Param message body Dto.UpdateRepository true "Repository details to change"
+// @Param update body Dto.UpdateRepository true "Repository details to change"
 // @Success 200 {object} Dto.Repository
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"

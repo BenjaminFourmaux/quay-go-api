@@ -147,7 +147,7 @@ func deleteOrganization(c *gin.Context) {
 // @Tags Organization
 // @Accept json
 // @Param orgname path string true "Name of the organization"
-// @Param message body Dto.UpdateOrganization true "Organization details to change"
+// @Param update body Dto.UpdateOrganization true "Organization details to change"
 // @Success 200 {object} Dto.Organization
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"

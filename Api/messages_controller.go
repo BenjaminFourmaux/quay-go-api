@@ -83,7 +83,7 @@ func createMessage(c *gin.Context) {
 // @Tags Messages
 // @Accept json
 // @Param uuid path string true "UUID of the message to update"
-// @Param message body Dto.UpdateMessage true "Message content and severity"
+// @Param update body Dto.UpdateMessage true "Message content and severity"
 // @Success 200 {object} Dto.Message
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"

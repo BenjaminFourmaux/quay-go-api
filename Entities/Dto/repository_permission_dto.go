@@ -8,3 +8,7 @@ type RepositoryPermission struct {
 	// Optional fields
 	IsRobot *bool `json:"isRobot,omitempty"`
 }
+
+type UpdateRepositoryPermission struct {
+	Role string `json:"role"` // allowed value: "admin", "write", "read"
+}

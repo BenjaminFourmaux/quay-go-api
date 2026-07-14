@@ -458,4 +458,16 @@ func PermissionNotFound(kind string, name string) *ApiError {
 	}
 }
 
+func RepositoryPermissionRoleInvalid(role string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "repository_permission_role_invalid",
+				Message: fmt.Sprintf("Repository permission role '%s' is invalid. Valid roles are 'admin', 'write', and 'read'", role),
+			},
+		},
+	}
+}
+
 // </editor-fold>

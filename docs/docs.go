@@ -169,7 +169,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Message content and severity",
-                        "name": "message",
+                        "name": "update",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -400,7 +400,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Organization details to change",
-                        "name": "message",
+                        "name": "update",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -724,7 +724,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Team description and role to update",
-                        "name": "team",
+                        "name": "update",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1180,7 +1180,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Repository details to change",
-                        "name": "message",
+                        "name": "update",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1316,6 +1316,66 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update team repository permission",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Update team repository permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Team name",
+                        "name": "teamname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Repository details to change",
+                        "name": "update",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateRepositoryPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Repository"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/repository/{repository}/permissions/user": {
@@ -1409,6 +1469,66 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update user repository permission",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Update user repository permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Repository details to change",
+                        "name": "update",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateRepositoryPermission"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Repository"
                         }
                     },
                     "401": {
@@ -1890,6 +2010,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.UpdateRepositoryPermission": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "description": "allowed value: \"admin\", \"write\", \"read\"",
                     "type": "string"
                 }
             }
