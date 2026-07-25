@@ -164,3 +164,8 @@ func UpdateRepository(repository Models.Repository) (*Models.Repository, error) 
 	err := Database.DB.Preload("Kind").Preload("NamespaceUser").Save(&repository).Error
 	return &repository, err
 }
+
+func UpdateRepositoryTagExpiration(repositoryId int, tagExpiration int) error {
+	err := Database.DB.Model(&Models.Repository{}).Where("id = ?", repositoryId).Update("tag_expiration", tagExpiration).Error
+	return err
+}

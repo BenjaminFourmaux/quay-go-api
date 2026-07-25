@@ -1760,6 +1760,69 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update a specific tag in a repository",
+                "tags": [
+                    "Tag"
+                ],
+                "summary": "Update a specific tag in a repository",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag name",
+                        "name": "tag",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Tag details to change",
+                        "name": "update",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdateTag"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Tag"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/users/me": {
@@ -2270,6 +2333,23 @@ const docTemplate = `{
             "properties": {
                 "role": {
                     "description": "allowed value: \"admin\", \"write\", \"read\"",
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.UpdateTag": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "description": "(If specified) The expiration for the image",
+                    "type": "integer"
+                },
+                "immutable": {
+                    "description": "(If specified) Whether the tag should be immutable. Write permission required to set, admin permission required to unset.",
+                    "type": "boolean"
+                },
+                "manifest_digest": {
+                    "description": "(If specified) The manifest digest to which the tag should point",
                     "type": "string"
                 }
             }

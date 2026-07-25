@@ -273,6 +273,19 @@ definitions:
         description: 'allowed value: "admin", "write", "read"'
         type: string
     type: object
+  Dto.UpdateTag:
+    properties:
+      expiration:
+        description: (If specified) The expiration for the image
+        type: integer
+      immutable:
+        description: (If specified) Whether the tag should be immutable. Write permission
+          required to set, admin permission required to unset.
+        type: boolean
+      manifest_digest:
+        description: (If specified) The manifest digest to which the tag should point
+        type: string
+    type: object
   Dto.UpdateTeam:
     properties:
       description:
@@ -1507,6 +1520,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a specific tag from a repository
+      tags:
+      - Tag
+    put:
+      description: Update a specific tag in a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Tag name
+        in: path
+        name: tag
+        required: true
+        type: string
+      - description: Tag details to change
+        in: body
+        name: update
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdateTag'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Tag'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a specific tag in a repository
       tags:
       - Tag
   /api/v1/users/me:

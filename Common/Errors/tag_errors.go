@@ -16,3 +16,39 @@ func TagNotFound(tag string, repository string) *ApiError {
 		},
 	}
 }
+
+func TagNameInvalid(tag string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "tag_name_invalid",
+				Message: fmt.Sprintf("Tag '%s' is invalid. It must match the pattern '%s'", tag, "^[\\w][\\w.-]{0,127}$"),
+			},
+		},
+	}
+}
+
+func ManifestNotFound(manifestDigest string, repository string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "manifest_not_found",
+				Message: fmt.Sprintf("Manifest '%s' not found in the repository '%s'", manifestDigest, repository),
+			},
+		},
+	}
+}
+
+func InvalidExpirationDate(expirationDate string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "tag_expiration_invalid",
+				Message: fmt.Sprintf("Expiration date '%s' is invalid. It must be a future date.", expirationDate),
+			},
+		},
+	}
+}

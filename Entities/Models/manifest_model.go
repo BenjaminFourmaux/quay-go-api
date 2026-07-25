@@ -1,7 +1,7 @@
 package Models
 
 type Manifest struct {
-	ID                   uint    `gorm:"primary_key;not null;column:id"`
+	ID                   int     `gorm:"primary_key;not null;column:id"`
 	RepositoryId         int     `gorm:"primary_key;not null;column:repository_id"`
 	Digest               string  `gorm:"primary_key;not null;column:digest"`
 	MediaTypeId          int     `gorm:"type:int;not null;column:media_type_id"`

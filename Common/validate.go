@@ -13,6 +13,8 @@ import (
 - function to validate a Dto must be named like: Validate<DtoName> and return an error
 */
 
+// <editor-fold desc="Validators">
+
 /*
 ValidateMessageSeverity checks if the severity is valid (e.g., "info", "warning", "error") and return true if the severity given is a valid Message severity, otherwise false
 */
@@ -30,34 +32,6 @@ func ValidateCreateOrganization(organizationMetadata Dto.CreateOrganization) err
 	}
 
 	return nil
-}
-
-/*
-IsValidOrganizationOrUserName checks if the organization or user name is valid (e.g., "my-org", "user_name", "username123")
-Rules:
-1. Not be empty
-2. Be between 2 and 255 characters long
-3. Contain only alphanumeric characters, dashes, or underscores
-*/
-func IsValidOrganizationOrUserName(name string) bool {
-	// 1. empty value
-	if name == "" {
-		return false
-	}
-
-	// 2. value length
-	if len(name) < 2 || len(name) > 255 {
-		return false
-	}
-
-	// 3. valid characters (alphanumeric, dash and underscore)
-	for _, char := range name {
-		if !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '-' && char != '_' {
-			return false
-		}
-	}
-
-	return true
 }
 
 func ValidateUpdateOrganization(organizationMetadata Dto.UpdateOrganization) error {
@@ -146,6 +120,38 @@ func ValidateUpdateRepositoryPermission(repositoryMetadata Dto.UpdateRepositoryP
 	return nil
 }
 
+// </editor-fold>
+
+// <editor-fold desc="IsValid">
+
+/*
+IsValidOrganizationOrUserName checks if the organization or user name is valid (e.g., "my-org", "user_name", "username123")
+Rules:
+1. Not be empty
+2. Be between 2 and 255 characters long
+3. Contain only alphanumeric characters, dashes, or underscores
+*/
+func IsValidOrganizationOrUserName(name string) bool {
+	// 1. empty value
+	if name == "" {
+		return false
+	}
+
+	// 2. value length
+	if len(name) < 2 || len(name) > 255 {
+		return false
+	}
+
+	// 3. valid characters (alphanumeric, dash and underscore)
+	for _, char := range name {
+		if !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '-' && char != '_' {
+			return false
+		}
+	}
+
+	return true
+}
+
 /*
 IsValidRepositoryKind cheks if the kind is valid (e.g., "image", or "application")
 */
@@ -175,3 +181,10 @@ IsValidRepositoryPermissionRole checks if the repository permission role is vali
 func IsValidRepositoryPermissionRole(role string) bool {
 	return role == "admin" || role == "write" || role == "read"
 }
+
+func IsValidTagName(tagName string) bool {
+	var reTagName = regexp.MustCompile(FullTagPattern)
+	return reTagName.MatchString(tagName)
+}
+
+// </editor-fold>
