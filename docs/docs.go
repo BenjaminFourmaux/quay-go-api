@@ -1664,6 +1664,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
+                        "description": "Include expired tags",
+                        "name": "include_expired",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
                         "description": "Include vulnerability information",
                         "name": "include_vulnerabilities",
                         "in": "query"

@@ -20,6 +20,10 @@ func ListRepositoryTags(repositoryNamespaced string, filters map[string]string, 
 	if includeVulnerabilities, ok := filters["include_vulnerabilities"]; ok {
 		filterIncludeVulnerabilities = includeVulnerabilities == "true"
 	}
+	var filterIncludeExpired bool = false
+	if includeExpired, ok := filters["include_expired"]; ok {
+		filterIncludeExpired = includeExpired == "true"
+	}
 
 	// Split repositoryNamespaced into namespace and name
 	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
@@ -57,7 +61,7 @@ func ListRepositoryTags(repositoryNamespaced string, filters map[string]string, 
 	}
 
 	// Retrieve the list of tags in this repository
-	tagsModel, err := Repositories.GetTagsFromRepository(repoExist.ID)
+	tagsModel, err := Repositories.GetTagsFromRepository(repoExist.ID, filterIncludeExpired)
 	if err != nil {
 		logger.Error("Error retrieving tags from repository: %s", err.Error())
 		return []Dto.Tag{}, err
@@ -70,6 +74,7 @@ func ListRepositoryTags(repositoryNamespaced string, filters map[string]string, 
 			Name:           tagModel.Name,
 			Reversion:      tagModel.Reversion,
 			StartTs:        time.UnixMilli(tagModel.LifetimeStartMs),
+			EndTs:          Common.ConvertMsToTime(tagModel.LifetimeEndMs),
 			ManifestDigest: tagModel.Manifest.Digest,
 			IsManifestList: false, // TODO: find how to determine if tag is a manifest list
 			Size:           *tagModel.Manifest.LayersCompressedSize,

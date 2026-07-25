@@ -1454,6 +1454,10 @@ paths:
         name: repository
         required: true
         type: string
+      - description: Include expired tags
+        in: query
+        name: include_expired
+        type: boolean
       - description: Include vulnerability information
         in: query
         name: include_vulnerabilities

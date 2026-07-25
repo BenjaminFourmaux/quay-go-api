@@ -285,7 +285,7 @@ func GetRepository(repositoryNamespaced string, filters map[string]string, curre
 
 	// Apply filters
 	if filterIncludeTags {
-		tagsModel, err := Repositories.GetTagsFromRepository(repositoryModel.ID)
+		tagsModel, err := Repositories.GetTagsFromRepository(repositoryModel.ID, true)
 		if err != nil {
 			switch err.Error() {
 			case "record not found":

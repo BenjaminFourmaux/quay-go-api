@@ -21,6 +21,7 @@ func tagController() {
 // @Summary List tags on a repository
 // @Tags Tag
 // @Param repository path string true "Repository name in the format namespace/repository"
+// @Param include_expired query bool false "Include expired tags"
 // @Param include_vulnerabilities query bool false "Include vulnerability information"
 // @Success 200 {object} []Dto.Tag
 // @Failure 400 {object} Errors.ErrorResponse "Bad Request"

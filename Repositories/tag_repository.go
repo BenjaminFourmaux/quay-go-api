@@ -6,15 +6,19 @@ import (
 	"quay-go-api/Entities/Models"
 )
 
-func GetTagsFromRepository(repositoryId int) ([]Models.Tag, error) {
+func GetTagsFromRepository(repositoryId int, includeExpired bool) ([]Models.Tag, error) {
 	var tags []Models.Tag
-	err := Database.DB.
+	query := Database.DB.
 		Preload("Manifest").
 		Preload("TagKind").
 		Preload("LinkedTag").
-		Where("repository_id = ?", repositoryId).
-		Find(&tags).
-		Error
+		Where("repository_id = ?", repositoryId)
+
+	if !includeExpired {
+		query = query.Where("lifetime_end_ms IS NULL")
+	}
+
+	err := query.Find(&tags).Error
 	return tags, err
 }
 
