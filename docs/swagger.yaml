@@ -1469,6 +1469,46 @@ paths:
       summary: List tags on a repository
       tags:
       - Tag
+  /api/v1/repository/{repository}/tag/{tag}:
+    get:
+      description: Get a specific tag from a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Tag name
+        in: path
+        name: tag
+        required: true
+        type: string
+      - description: Include vulnerability information
+        in: query
+        name: include_vulnerabilities
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Tag'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a specific tag from a repository
+      tags:
+      - Tag
   /api/v1/users/me:
     get:
       description: Get the current authenticated user information
