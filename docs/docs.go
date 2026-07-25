@@ -1642,6 +1642,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/repository/{repository}/tag": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List tags on a repository",
+                "tags": [
+                    "Tag"
+                ],
+                "summary": "List tags on a repository",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include vulnerability information",
+                        "name": "include_vulnerabilities",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Tag"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -2027,6 +2085,41 @@ const docTemplate = `{
                 }
             }
         },
+        "Dto.Tag": {
+            "type": "object",
+            "properties": {
+                "is_manifest_list": {
+                    "type": "boolean"
+                },
+                "last_modified": {
+                    "type": "string"
+                },
+                "manifest_digest": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "reversion": {
+                    "type": "boolean"
+                },
+                "size": {
+                    "description": "In bits",
+                    "type": "integer"
+                },
+                "start_ts": {
+                    "type": "string"
+                },
+                "vulnerabilities": {
+                    "description": "Additional fields for vulnerability information",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Dto.Vulnerabilities"
+                        }
+                    ]
+                }
+            }
+        },
         "Dto.Team": {
             "type": "object",
             "properties": {
@@ -2240,6 +2333,26 @@ const docTemplate = `{
                 },
                 "public": {
                     "type": "boolean"
+                }
+            }
+        },
+        "Dto.Vulnerabilities": {
+            "type": "object",
+            "properties": {
+                "critical": {
+                    "type": "integer"
+                },
+                "high": {
+                    "type": "integer"
+                },
+                "low": {
+                    "type": "integer"
+                },
+                "medium": {
+                    "type": "integer"
+                },
+                "unspecified": {
+                    "type": "integer"
                 }
             }
         },

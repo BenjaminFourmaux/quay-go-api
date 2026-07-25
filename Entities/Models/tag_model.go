@@ -8,7 +8,7 @@ type Tag struct {
 	LifetimeStartMs int64  `gorm:"type:bigint;not null"` // Timestamp in milliseconds
 	LifetimeEndMs   *int64 `gorm:"type:bigint;null"`     // Timestamp in milliseconds
 	Hidden          bool   `gorm:"not null"`
-	Revision        int    `gorm:"not null"`
+	Reversion       bool   `gorm:"not null"`
 	TagKindId       int    `gorm:"not null"` // 1 -> tag
 	LinkedTagId     *int   `gorm:"null"`
 
