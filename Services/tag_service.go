@@ -306,3 +306,72 @@ func UpdateRepositoryTag(repositoryNamespaced string, tagName string, updateTag 
 
 	return updatedTag, nil
 }
+
+func DeleteRepositoryTag(repositoryNamespaced string, tagName string, currentUser *Auth.AuthenticatedUser) error {
+	logger.Info("[Tag Service] Delete Repository Tag")
+	logger.Debug("Repository name: %s", repositoryNamespaced)
+	logger.Debug("Tag: %s", tagName)
+
+	// Check if tagName is correct
+	if !Common.IsValidTagName(tagName) {
+		return Errors.TagNameInvalid(tagName)
+	}
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Retrieve the tag
+	tagModel, err := Repositories.GetTagByNameAndRepository(tagName, repoExist.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No tag '%s' found in repository '%s'", tagName, repositoryNamespaced)
+			return Errors.TagNotFound(tagName, repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving tag from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// TODO: Check if immutable features is enabled and if the tag is immutable, if so return an error
+
+	// Delete the tag from the DB
+	if err = Repositories.DeleteTag(tagModel, time.Now().UnixMilli()); err != nil {
+		logger.Error("Error deleting tag from database: %s", err.Error())
+		return err
+	}
+
+	return nil
+}

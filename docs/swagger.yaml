@@ -1483,6 +1483,39 @@ paths:
       tags:
       - Tag
   /api/v1/repository/{repository}/tag/{tag}:
+    delete:
+      description: Delete a specific tag in a repository
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Tag name
+        in: path
+        name: tag
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a specific tag in a repository
+      tags:
+      - Tag
     get:
       description: Get a specific tag from a repository
       parameters:

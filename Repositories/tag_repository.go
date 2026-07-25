@@ -1,6 +1,7 @@
 package Repositories
 
 import (
+	"gorm.io/gorm"
 	"quay-go-api/Database"
 	"quay-go-api/Entities/Models"
 )
@@ -48,4 +49,24 @@ func UpdateTagManifest(repositoryId int, tagId int, manifestId int) error {
 		Where("id = ? AND repository_id = ?", tagId, repositoryId).
 		Update("manifest_id", manifestId).
 		Error
+}
+
+func DeleteTag(tag Models.Tag, nowMs int64) error {
+	err := Database.DB.Transaction(func(tx *gorm.DB) error {
+		// TODO: (1. Clear pull statistics) ... features not implemented yet
+
+		// TODO: 2. Clean notifications for tag expiry
+
+		// 3. Update lifetime_end_ms with the nowMs
+		if err := tx.Model(&tag).Update("lifetime_end_ms", nowMs).Error; err != nil {
+			return err
+		}
+		/*
+			Dev notes: Why just update lifetime_end_ms instead of deleting the tag?
+			Copilot response: Because we want to keep a record of the tag for historical purposes, and also to prevent re-creation of the same tag name in the future. This is a common practice in systems that require audit trails or historical data retention.
+		*/
+
+		return nil // commit
+	})
+	return err
 }

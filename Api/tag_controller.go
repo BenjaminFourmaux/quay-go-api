@@ -13,6 +13,7 @@ func tagController() {
 	registerRepositorySubRoute(http.MethodGet, "tag", listRepositoryTags)
 	registerRepositorySubRoute(http.MethodGet, "tag/:tag", getRepositoryTag)
 	registerRepositorySubRoute(http.MethodPut, "tag/:tag", updateRepositoryTag)
+	registerRepositorySubRoute(http.MethodDelete, "tag/:tag", deleteRepositoryTag)
 }
 
 // listRepositoryTags List tags on a repository
@@ -42,7 +43,7 @@ func listRepositoryTags(c *gin.Context, repositoryNamespaced string) {
 		throwError(c, err)
 		return
 	}
-	c.JSON(200, repository)
+	c.JSON(http.StatusOK, repository)
 }
 
 // getRepositoryTag Get a specific tag from a repository
@@ -75,7 +76,7 @@ func getRepositoryTag(c *gin.Context, repositoryNamespaced string) {
 		throwError(c, err)
 		return
 	}
-	c.JSON(200, repository)
+	c.JSON(http.StatusOK, repository)
 }
 
 // updateRepositoryTag Update a specific tag in a repository
@@ -111,5 +112,34 @@ func updateRepositoryTag(c *gin.Context, repositoryNamespaced string) {
 		throwError(c, err)
 		return
 	}
-	c.JSON(200, repository)
+	c.JSON(http.StatusOK, repository)
+}
+
+// deleteRepositoryTag Delete a specific tag in a repository
+// @Description Delete a specific tag in a repository
+// @Summary Delete a specific tag in a repository
+// @Tags Tag
+// @Param repository path string true "Repository name in the format namespace/repository"
+// @Param tag path string true "Tag name"
+// @Success 204
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository}/tag/{tag} [delete]
+func deleteRepositoryTag(c *gin.Context, repositoryNamespaced string) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	tag := c.Param("tag")
+
+	err := Services.DeleteRepositoryTag(repositoryNamespaced, tag, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
