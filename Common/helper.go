@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type UpdateFieldMapping struct {
@@ -158,6 +159,15 @@ func SplitRepositoryNamespaced(repositoryNamespaced string) (*string, string, er
 	}
 
 	return nil, "", fmt.Errorf("invalid repository namespaced %s", repositoryNamespaced)
+}
+
+func ConvertMsToTime(ms *int64) *time.Time {
+	if ms == nil {
+		return nil
+	} else {
+		t := time.UnixMilli(*ms)
+		return &t
+	}
 }
 
 /*
