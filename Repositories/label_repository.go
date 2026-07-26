@@ -14,3 +14,14 @@ func ListManifestLabels(repositoryId int, manifestId int) ([]Models.ManifestLabe
 		Error
 	return labels, err
 }
+
+func GetManifestLabelByUUID(repositoryId int, manifestId int, labelUUID string) (*Models.ManifestLabel, error) {
+	var label Models.ManifestLabel
+	err := Database.DB.
+		Preload("Label").
+		InnerJoins("JOIN label ON label.id = manifestlabel.label_id").
+		Where("repository_id = ? AND manifest_id = ? AND label.uuid = ?", repositoryId, manifestId, labelUUID).
+		First(&label).
+		Error
+	return &label, err
+}

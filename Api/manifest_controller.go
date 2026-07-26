@@ -12,6 +12,7 @@ func manifestController() {
 	registerRepositorySubRoute(http.MethodGet, "manifest/:manifestRef", getManifest)
 	registerRepositorySubRoute(http.MethodGet, "manifest/:manifestRef/labels", getManifestLabels)
 	registerRepositorySubRoute(http.MethodPost, "manifest/:manifestRef/labels", createManifestLabel)
+	registerRepositorySubRoute(http.MethodGet, "manifest/:manifestRef/labels/:labelId", getManifestLabel)
 }
 
 // getManifest Get a repository manifest
@@ -105,4 +106,36 @@ func createManifestLabel(c *gin.Context, repositoryNamespaced string) {
 		return
 	}
 	c.JSON(201, createdLabel)
+}
+
+// getManifestLabel Get a repository manifest label
+// @Description Get a repository manifest label
+// @Summary Get a repository manifest label
+// @Tags Manifest
+// @Param repository path string true "Repository name in the format namespace/repository"
+// @Param manifestRef path string true "Manifest reference sha256"
+// @Param labelId path string true "Label ID (UUID)"
+// @Success 200 {object} Dto.ManifestLabel
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository}/manifest/{manifestRef}/labels/{labelId} [get]
+func getManifestLabel(c *gin.Context, repositoryNamespaced string) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	manifestRef := c.Param("manifestRef")
+	labelId := c.Param("labelId")
+
+	label, err := Services.GetManifestLabel(repositoryNamespaced, manifestRef, labelId, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, label)
 }
