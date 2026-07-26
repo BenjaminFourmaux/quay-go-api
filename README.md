@@ -3,7 +3,11 @@
 [![](https://img.shields.io/badge/go-1.24-version?logo=go&color=rgb(0%2C%20126%2C%20198))]()
 [![](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/benjaminfourmauxb/quay-go-api)
 
-An API designed to be deployed alongside the official [Quay Registry](https://github.com/quay/quay) API and to interface with Quay's database to provide features for automation.
+The [official Quay API](https://github.com/quay/quay) is more a BFF (_Backend For Frontend_) than a real RESTful API and does not follow its principles.
+
+That is why I decided to take over this API in Go to make it RESTful and provide automation features.
+
+This API can be deployed alongside the Quay Registry and interfaces with it via its database.
 
 ## Get stated :rocket:
 
@@ -80,5 +84,7 @@ You can:
 - Build the code
 
 You must **Mention** the © Copyright if you use and modified code for your own profit. Thank you
+
+---
 
 © 2026 - Benjamin Fourmaux - All right reserved
