@@ -66,7 +66,7 @@ func QuayGetManifest(repositoryNamespaced string, manifestRef string, currentUse
 	var rawLayers []json.RawMessage
 	_ = json.Unmarshal(body["layers"], &rawLayers)
 
-	var layers []Dto.Layer
+	var layers []Dto.ManifestLayer
 	for _, raw := range rawLayers {
 		var layer map[string]json.RawMessage
 		_ = json.Unmarshal(raw, &layer)
@@ -91,7 +91,7 @@ func QuayGetManifest(repositoryNamespaced string, manifestRef string, currentUse
 		_ = json.Unmarshal(layer["created_datetime"], &created)
 		createdDatetime, _ := time.Parse(time.RFC1123Z, created)
 
-		layers = append(layers, Dto.Layer{
+		layers = append(layers, Dto.ManifestLayer{
 			index,
 			compressedSize,
 			isRemote,

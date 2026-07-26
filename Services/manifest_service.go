@@ -72,7 +72,7 @@ func GetManifest(repositoryNamespaced string, manifestRef string, currentUser *A
 		logger.Warning("Error retrieving manifest from Quay API: %s, pass...", err.Error())
 		// pass
 		quayManifestModel = Dto.Manifest{
-			Layers: []Dto.Layer{},
+			Layers: []Dto.ManifestLayer{},
 		}
 	}
 
@@ -86,4 +86,79 @@ func GetManifest(repositoryNamespaced string, manifestRef string, currentUser *A
 	}
 
 	return manifestDTO, nil
+}
+
+func GetManifestLabels(repositoryNamespaced string, manifestRef string, currentUser *Auth.AuthenticatedUser) ([]Dto.ManifestLabel, error) {
+	logger.Info("[Manifest Service] Get Manifest Labels")
+	logger.Debug("Repository name: %s", repositoryNamespaced)
+	logger.Debug("Manifest ref: %s", manifestRef)
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return []Dto.ManifestLabel{}, Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return []Dto.ManifestLabel{}, Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return []Dto.ManifestLabel{}, err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return []Dto.ManifestLabel{}, Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return []Dto.ManifestLabel{}, err
+		}
+	}
+
+	// Get the manifest and check if exists
+	manifestModel, err := Repositories.GetRepositoryManifestByDigest(repoExist.ID, manifestRef)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No manifest '%s' found in repository '%s'", manifestRef, repositoryNamespaced)
+			return []Dto.ManifestLabel{}, Errors.ManifestNotFound(manifestRef, repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving manifest from database: %s", err.Error())
+			return []Dto.ManifestLabel{}, err
+		}
+	}
+
+	// Get labels from the database
+	manifestLabelsModel, err := Repositories.ListManifestLabels(repoExist.ID, manifestModel.ID)
+	if err != nil {
+		logger.Error("Error retrieving manifest labels from database: %s", err.Error())
+		return []Dto.ManifestLabel{}, err
+	}
+
+	// Convert model to DTO
+	labels := []Dto.ManifestLabel{}
+	for _, labelModel := range manifestLabelsModel {
+		labels = append(labels, Dto.ManifestLabel{
+			Id:         labelModel.Label.UUID,
+			Key:        labelModel.Label.Key,
+			Value:      labelModel.Label.Value,
+			SourceType: Common.MapLabelSourceType(labelModel.Label.SourceTypeId).Name,
+			MediaType:  Common.MapMediaTypeName(labelModel.Label.MediaTypeId),
+		})
+	}
+
+	return labels, nil
 }
