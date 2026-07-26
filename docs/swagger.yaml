@@ -1,4 +1,11 @@
 definitions:
+  Dto.AddManifestLabel:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
   Dto.Avatar:
     properties:
       color:
@@ -1288,6 +1295,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a repository manifest labels
+      tags:
+      - Manifest
+    post:
+      description: Create a new manifest label
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Manifest label data
+        in: body
+        name: label
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.AddManifestLabel'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.AddManifestLabel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new manifest label
       tags:
       - Manifest
   /api/v1/repository/{repository}/permissions/team:

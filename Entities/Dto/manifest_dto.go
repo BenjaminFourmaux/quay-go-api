@@ -29,3 +29,8 @@ type ManifestLabel struct {
 	SourceType string `json:"source_type"`
 	MediaType  string `json:"media_type"`
 }
+
+type AddManifestLabel struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
