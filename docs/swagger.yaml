@@ -50,6 +50,49 @@ definitions:
           'member')
         type: string
     type: object
+  Dto.Layer:
+    properties:
+      author:
+        type: string
+      blob_digest:
+        type: string
+      command:
+        items:
+          type: string
+        type: array
+      comment:
+        type: string
+      compressed_size:
+        description: In Bytes
+        type: integer
+      created_datetime:
+        type: string
+      digest:
+        type: string
+      index:
+        type: integer
+      is_remote:
+        type: boolean
+      urls:
+        items:
+          type: string
+        type: array
+    type: object
+  Dto.Manifest:
+    properties:
+      config_media_type:
+        type: string
+      digest:
+        type: string
+      is_manifest_list:
+        type: boolean
+      layers:
+        items:
+          $ref: '#/definitions/Dto.Layer'
+        type: array
+      manifest_metadata:
+        type: string
+    type: object
   Dto.Message:
     properties:
       content:
@@ -193,6 +236,8 @@ definitions:
     type: object
   Dto.Tag:
     properties:
+      end_ts:
+        type: string
       is_manifest_list:
         type: boolean
       last_modified:
@@ -1167,6 +1212,46 @@ paths:
       summary: Update repository details
       tags:
       - Repository
+  /api/v1/repository/{repository}/manifest/{manifestRef}:
+    get:
+      description: Get a repository manifest
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Manifest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository manifest
+      tags:
+      - Manifest
   /api/v1/repository/{repository}/permissions/team:
     get:
       description: List teams permission on a repository

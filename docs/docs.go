@@ -1210,6 +1210,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/repository/{repository}/manifest/{manifestRef}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a repository manifest",
+                "tags": [
+                    "Manifest"
+                ],
+                "summary": "Get a repository manifest",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Manifest reference sha256",
+                        "name": "manifestRef",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Manifest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/repository/{repository}/permissions/team": {
             "get": {
                 "security": [
@@ -2055,6 +2117,71 @@ const docTemplate = `{
                 }
             }
         },
+        "Dto.Layer": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "blob_digest": {
+                    "type": "string"
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "compressed_size": {
+                    "description": "In Bytes",
+                    "type": "integer"
+                },
+                "created_datetime": {
+                    "type": "string"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "is_remote": {
+                    "type": "boolean"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "Dto.Manifest": {
+            "type": "object",
+            "properties": {
+                "config_media_type": {
+                    "type": "string"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "is_manifest_list": {
+                    "type": "boolean"
+                },
+                "layers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.Layer"
+                    }
+                },
+                "manifest_metadata": {
+                    "type": "string"
+                }
+            }
+        },
         "Dto.Message": {
             "type": "object",
             "properties": {
@@ -2270,6 +2397,9 @@ const docTemplate = `{
         "Dto.Tag": {
             "type": "object",
             "properties": {
+                "end_ts": {
+                    "type": "string"
+                },
                 "is_manifest_list": {
                     "type": "boolean"
                 },
