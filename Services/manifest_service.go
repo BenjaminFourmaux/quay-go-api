@@ -381,19 +381,6 @@ func DeleteManifestLabel(repositoryNamespaced string, manifestRef string, labelI
 		}
 	}
 
-	// Retrieve the label from the database
-	/*labelManifestModel, err := Repositories.GetManifestLabelByUUID(repoExist.ID, manifestModel.ID, labelId)
-	if err != nil {
-		switch err.Error() {
-		case "record not found":
-			logger.Warning("No label '%s' found in manifest '%s' of repository '%s'", labelId, manifestRef, repositoryNamespaced)
-			return Errors.ManifestLabelNotFound(labelId, manifestRef, repositoryNamespaced)
-		default:
-			logger.Error("Error retrieving manifest label from database: %s", err.Error())
-			return err
-		}
-	}*/
-
 	// Delete label from the database
 	err = Repositories.DeleteManifestLabelByUUID(repoExist.ID, manifestModel.ID, labelId)
 	if err != nil {
