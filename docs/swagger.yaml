@@ -1,4 +1,11 @@
 definitions:
+  Dto.AddManifestLabel:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
   Dto.Avatar:
     properties:
       color:
@@ -49,6 +56,61 @@ definitions:
         description: Name of the role ('admin', 'creator' or 'member'. Optional. Default
           'member')
         type: string
+    type: object
+  Dto.Manifest:
+    properties:
+      config_media_type:
+        type: string
+      digest:
+        type: string
+      is_manifest_list:
+        type: boolean
+      layers:
+        items:
+          $ref: '#/definitions/Dto.ManifestLayer'
+        type: array
+      manifest_data:
+        type: string
+    type: object
+  Dto.ManifestLabel:
+    properties:
+      id:
+        description: UUID
+        type: string
+      key:
+        type: string
+      media_type:
+        type: string
+      source_type:
+        type: string
+      value:
+        type: string
+    type: object
+  Dto.ManifestLayer:
+    properties:
+      author:
+        type: string
+      blob_digest:
+        type: string
+      command:
+        items:
+          type: string
+        type: array
+      comment:
+        type: string
+      compressed_size:
+        description: In Bytes
+        type: integer
+      created_datetime:
+        type: string
+      index:
+        type: integer
+      is_remote:
+        type: boolean
+      urls:
+        items:
+          type: string
+        type: array
     type: object
   Dto.Message:
     properties:
@@ -193,6 +255,8 @@ definitions:
     type: object
   Dto.Tag:
     properties:
+      end_ts:
+        type: string
       is_manifest_list:
         type: boolean
       last_modified:
@@ -1167,6 +1231,214 @@ paths:
       summary: Update repository details
       tags:
       - Repository
+  /api/v1/repository/{repository}/manifest/{manifestRef}:
+    get:
+      description: Get a repository manifest
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Manifest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository manifest
+      tags:
+      - Manifest
+  /api/v1/repository/{repository}/manifest/{manifestRef}/labels:
+    get:
+      description: Get a repository manifest labels
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Manifest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository manifest labels
+      tags:
+      - Manifest
+    post:
+      description: Create a new manifest label
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Manifest label data
+        in: body
+        name: label
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.AddManifestLabel'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.AddManifestLabel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new manifest label
+      tags:
+      - Manifest
+  /api/v1/repository/{repository}/manifest/{manifestRef}/labels/{labelId}:
+    delete:
+      description: Delete a repository manifest label
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Label ID (UUID)
+        in: path
+        name: labelId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a repository manifest label
+      tags:
+      - Manifest
+    get:
+      description: Get a repository manifest label
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Label ID (UUID)
+        in: path
+        name: labelId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.ManifestLabel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository manifest label
+      tags:
+      - Manifest
   /api/v1/repository/{repository}/permissions/team:
     get:
       description: List teams permission on a repository

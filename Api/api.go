@@ -46,6 +46,7 @@ func endpointsRegistration() {
 	repositoryController()
 	permissionController()
 	tagController()
+	manifestController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
@@ -67,7 +68,7 @@ func authorizedMiddleware(c *gin.Context) {
 	}
 
 	// Check if the token is valid
-	isValidated, validatedToken := Auth.ValidateBearerToken(authHeader)
+	isValidated, validatedToken, rawToken := Auth.ValidateBearerToken(authHeader)
 	if !isValidated {
 		err := Errors.ForbiddenInvalidToken()
 		Logger.Warning(err.Error())
@@ -78,6 +79,7 @@ func authorizedMiddleware(c *gin.Context) {
 	// Add token retried scopes to the context for later use in the endpoint handler
 	c.Set("scopes", validatedToken.Scope)
 	c.Set("authenticatedUserId", validatedToken.AuthorizedUserID)
+	c.Set("token", rawToken)
 
 	// Log
 	Logger.Debug("[Auth] Authenticated User ID: %d", validatedToken.AuthorizedUserID)
@@ -93,13 +95,15 @@ func retrieveCurrentUser(c *gin.Context, scopes []Auth.Scope) (Auth.Authenticate
 		return Auth.AuthenticatedUser{}, hasScopesErr
 	}
 	// If the user is allowed, retrieve the user information from the context (getting in the auth middleware) and return it
-	userId, _ := c.Get("authenticatedUserId")
+	userId := c.GetInt("authenticatedUserId")
+	userToken := c.GetString("token")
 	userScopesInterface, _ := c.Get("scopes")
 	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
 
 	authenticatedUser := Auth.AuthenticatedUser{
-		ID:     userId.(int),
+		ID:     userId,
 		Scopes: userScopes,
+		Token:  userToken,
 	}
 
 	return authenticatedUser, nil

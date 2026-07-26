@@ -78,3 +78,63 @@ func GetRoleIdFromRoleName(roleName string) int {
 		return 0
 	}
 }
+
+/*
+MapMediaTypeName maps a media type ID to its corresponding MediaType Name.
+Hardcoded values in Database
+*/
+func MapMediaTypeName(mediaTypeId int) string {
+	switch mediaTypeId {
+	case 1:
+		return "text/plain"
+	case 2:
+		return "application/json"
+	case 3:
+		return "text/markdown"
+	case 4:
+		return "application/vnd.cnr.blob.v0.tar+gzip"
+	case 5:
+		return "application/vnd.cnr.package-manifest.helm.v0.json"
+	case 6:
+		return "application/vnd.cnr.package-manifest.kpm.v0.json"
+	case 7:
+		return "application/vnd.cnr.package-manifest.docker-compose.v0.json"
+	case 8:
+		return "application/vnd.cnr.package.kpm.v0.tar+gzip"
+	case 9:
+		return "application/vnd.cnr.package.helm.v0.tar+gzip"
+	case 10:
+		return "application/vnd.cnr.package.docker-compose.v0.tar+gzip"
+	case 11:
+		return "application/vnd.cnr.manifests.v0.json"
+	case 12:
+		return "application/vnd.cnr.manifest.list.v0.json"
+	case 13:
+		return "application/vnd.docker.distribution.manifest.v1+json"
+	case 14:
+		return "application/vnd.docker.distribution.manifest.v1+prettyjws"
+	case 15:
+		return "application/vnd.docker.distribution.manifest.v2+json"
+	case 16:
+		return "application/vnd.docker.distribution.manifest.list.v2+json"
+	case 17:
+		return "application/vnd.oci.image.index.v1+json"
+	case 18:
+		return "application/vnd.oci.image.manifest.v1+json"
+	default:
+		return "unknown"
+	}
+}
+
+func MapLabelSourceType(sourceTypeId int) Models.LabelSourceType {
+	switch sourceTypeId {
+	case 1:
+		return Models.LabelSourceType{ID: 1, Name: "manifest", Mutable: false}
+	case 2:
+		return Models.LabelSourceType{ID: 2, Name: "api", Mutable: true}
+	case 3:
+		return Models.LabelSourceType{ID: 3, Name: "internal", Mutable: false}
+	default:
+		return Models.LabelSourceType{ID: 0, Name: "unknown", Mutable: false}
+	}
+}

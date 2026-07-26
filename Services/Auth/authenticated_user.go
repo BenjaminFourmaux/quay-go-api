@@ -6,4 +6,5 @@ AuthenticatedUser struct for storing information (scopes and id) of the authenti
 type AuthenticatedUser struct {
 	ID     int
 	Scopes []Scope
+	Token  string
 }

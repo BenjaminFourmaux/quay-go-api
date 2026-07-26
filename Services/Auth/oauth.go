@@ -12,15 +12,18 @@ const AccessTokenPrefixLength = 20
 /*
 ValidateBearerToken Validate an OAuth token found inside the Authorization header and indicate whether it's a valid OAuth token
 */
-func ValidateBearerToken(authHeader string) (bool, Models.OauthAccessToken) {
+func ValidateBearerToken(authHeader string) (bool, Models.OauthAccessToken, string) {
 	// We assume that the token is not empty (validate by the first condition of the authorized middleware)
 
 	normalized := strings.Split(authHeader, " ")
 	if len(normalized) != 2 || strings.ToLower(normalized[0]) != "bearer" {
-		return false, Models.OauthAccessToken{}
+		return false, Models.OauthAccessToken{}, ""
 	}
-	oauthToken := normalized[1]
-	return validateOauthToken(oauthToken)
+	oauthToken := normalized[1] // Get the raw token
+
+	isValid, validatedOauthToken := validateOauthToken(oauthToken)
+
+	return isValid, validatedOauthToken, oauthToken
 }
 
 func validateOauthToken(token string) (bool, Models.OauthAccessToken) {

@@ -52,3 +52,15 @@ func InvalidExpirationDate(expirationDate string) *ApiError {
 		},
 	}
 }
+
+func ManifestLabelNotFound(labelId string, manifestDigest string, repository string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "manifest_label_not_found",
+				Message: fmt.Sprintf("Manifest label '%s' not found for manifest '%s' in the repository '%s'", labelId, manifestDigest, repository),
+			},
+		},
+	}
+}
