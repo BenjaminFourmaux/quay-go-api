@@ -1,6 +1,7 @@
 package Repositories
 
 import (
+	"gorm.io/gorm"
 	"quay-go-api/Database"
 	"quay-go-api/Entities/Models"
 )
@@ -24,4 +25,31 @@ func GetManifestLabelByUUID(repositoryId int, manifestId int, labelUUID string) 
 		First(&label).
 		Error
 	return &label, err
+}
+
+func DeleteManifestLabelByUUID(repositoryId int, manifestId int, labelUUID string) error {
+	err := Database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Get the label if exist
+		manifestLabel, err := GetManifestLabelByUUID(repositoryId, manifestId, labelUUID)
+		if err != nil {
+			return err
+		}
+		if manifestLabel == nil {
+			return gorm.ErrRecordNotFound
+		}
+
+		// 2. Delete the label association
+		err = tx.Delete(manifestLabel).Error
+		if err != nil {
+			return err
+		}
+
+		// 3. Delete the label
+		err = tx.Delete(manifestLabel.Label).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }

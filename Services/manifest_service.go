@@ -326,3 +326,86 @@ func GetManifestLabel(repositoryNamespaced string, manifestRef string, labelId s
 
 	return label, nil
 }
+
+func DeleteManifestLabel(repositoryNamespaced string, manifestRef string, labelId string, currentUser *Auth.AuthenticatedUser) error {
+	logger.Info("[Manifest Service] Get Manifest Label")
+	logger.Debug("Repository name: %s", repositoryNamespaced)
+	logger.Debug("Manifest ref: %s", manifestRef)
+	logger.Debug("Label ID: %s", labelId)
+
+	// Split repositoryNamespaced into namespace and name
+	namespace, reponame, err := Common.SplitRepositoryNamespaced(repositoryNamespaced)
+	if err != nil {
+		logger.Warning("Invalid repository namespaced: %s", repositoryNamespaced)
+		return Errors.RepositoryInvalid(repositoryNamespaced)
+	}
+
+	// Check if the namespace (org or user) exists
+	if namespace != nil {
+		_, err = Repositories.GetUserOrOrganizationByName(*namespace)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user or organization found with name: %s", *namespace)
+				return Errors.RepositoryNamespaceNotFound(*namespace)
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+	}
+
+	// Check if the repository exits
+	repoExist, err := Repositories.FindRepositoryByNameAndNamespace(reponame, namespace)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No repository '%s' found", repositoryNamespaced)
+			return Errors.RepositoryNotFound(repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving repository  from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Get the manifest and check if exists
+	manifestModel, err := Repositories.GetRepositoryManifestByDigest(repoExist.ID, manifestRef)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No manifest '%s' found in repository '%s'", manifestRef, repositoryNamespaced)
+			return Errors.ManifestNotFound(manifestRef, repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving manifest from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Retrieve the label from the database
+	/*labelManifestModel, err := Repositories.GetManifestLabelByUUID(repoExist.ID, manifestModel.ID, labelId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No label '%s' found in manifest '%s' of repository '%s'", labelId, manifestRef, repositoryNamespaced)
+			return Errors.ManifestLabelNotFound(labelId, manifestRef, repositoryNamespaced)
+		default:
+			logger.Error("Error retrieving manifest label from database: %s", err.Error())
+			return err
+		}
+	}*/
+
+	// Delete label from the database
+	err = Repositories.DeleteManifestLabelByUUID(repoExist.ID, manifestModel.ID, labelId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No label '%s' found in manifest '%s' of repository '%s'", labelId, manifestRef, repositoryNamespaced)
+			return Errors.ManifestLabelNotFound(labelId, manifestRef, repositoryNamespaced)
+		default:
+			logger.Error("Error deleting manifest label from database: %s", err.Error())
+			return err
+		}
+	}
+
+	return nil
+}

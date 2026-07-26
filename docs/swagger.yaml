@@ -1353,6 +1353,48 @@ paths:
       tags:
       - Manifest
   /api/v1/repository/{repository}/manifest/{manifestRef}/labels/{labelId}:
+    delete:
+      description: Delete a repository manifest label
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Label ID (UUID)
+        in: path
+        name: labelId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a repository manifest label
+      tags:
+      - Manifest
     get:
       description: Get a repository manifest label
       parameters:

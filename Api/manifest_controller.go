@@ -13,6 +13,7 @@ func manifestController() {
 	registerRepositorySubRoute(http.MethodGet, "manifest/:manifestRef/labels", getManifestLabels)
 	registerRepositorySubRoute(http.MethodPost, "manifest/:manifestRef/labels", createManifestLabel)
 	registerRepositorySubRoute(http.MethodGet, "manifest/:manifestRef/labels/:labelId", getManifestLabel)
+	registerRepositorySubRoute(http.MethodDelete, "manifest/:manifestRef/labels/:labelId", deleteManifestLabel)
 }
 
 // getManifest Get a repository manifest
@@ -138,4 +139,36 @@ func getManifestLabel(c *gin.Context, repositoryNamespaced string) {
 		return
 	}
 	c.JSON(http.StatusOK, label)
+}
+
+// deleteManifestLabel Delete a repository manifest label
+// @Description Delete a repository manifest label
+// @Summary Delete a repository manifest label
+// @Tags Manifest
+// @Param repository path string true "Repository name in the format namespace/repository"
+// @Param manifestRef path string true "Manifest reference sha256"
+// @Param labelId path string true "Label ID (UUID)"
+// @Success 204
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/repository/{repository}/manifest/{manifestRef}/labels/{labelId} [delete]
+func deleteManifestLabel(c *gin.Context, repositoryNamespaced string) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	manifestRef := c.Param("manifestRef")
+	labelId := c.Param("labelId")
+
+	err := Services.DeleteManifestLabel(repositoryNamespaced, manifestRef, labelId, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
