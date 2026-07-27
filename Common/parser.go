@@ -104,3 +104,44 @@ func ConvertRepositoryPermissionModelToDto(repositoryPermissionModel Models.Repo
 	}
 	return permission
 }
+
+func ConvertPermissionPrototypeModelToDto(prototypeModel Models.PermissionPrototype, activatingUserOrgMember bool, delegateOrgMember bool) Dto.Prototype {
+	prototype := Dto.Prototype{
+		Id:   prototypeModel.UUID,
+		Role: prototypeModel.Role.Name,
+	}
+
+	if prototypeModel.ActivatingUserId != nil && prototypeModel.ActivatingUser != nil { // Always true
+		prototype.ActivatingUser = Dto.ActivatingUser{
+			Name:        prototypeModel.ActivatingUser.Username,
+			IsRobot:     prototypeModel.ActivatingUser.Robot,
+			Kind:        "user",
+			IsOrgMember: activatingUserOrgMember,
+			Avatar:      Avatar.GetAvatarForUser(*prototypeModel.ActivatingUser),
+		}
+	}
+
+	// Delegate to a user
+	if prototypeModel.DelegateUserId != nil && prototypeModel.DelegateUser != nil {
+		prototype.Delegate = Dto.Delegate{
+			Name:        prototypeModel.DelegateUser.Username,
+			IsRobot:     prototypeModel.DelegateUser.Robot,
+			Kind:        "user",
+			IsOrgMember: delegateOrgMember,
+			Avatar:      Avatar.GetAvatarForUser(*prototypeModel.DelegateUser),
+		}
+	}
+
+	// Delegate to a team
+	if prototypeModel.DelegateTeamId != nil && prototypeModel.DelegateTeam != nil {
+		prototype.Delegate = Dto.Delegate{
+			Name:        prototypeModel.DelegateTeam.Name,
+			IsRobot:     false, // A team cannot be a robot account
+			Kind:        "team",
+			IsOrgMember: delegateOrgMember,
+			Avatar:      Avatar.GetAvatarForTeam(*prototypeModel.DelegateTeam),
+		}
+	}
+
+	return prototype
+}

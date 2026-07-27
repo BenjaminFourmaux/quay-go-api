@@ -476,6 +476,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/organization/{orgname}/prototypes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List the existing prototypes for this organization",
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "List the existing prototypes for this organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Prototype"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -2300,6 +2352,27 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "Dto.ActivatingUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "is_org_member": {
+                    "type": "boolean"
+                },
+                "is_robot": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "'user' or 'team'",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "Dto.AddManifestLabel": {
             "type": "object",
             "properties": {
@@ -2382,6 +2455,27 @@ const docTemplate = `{
                 },
                 "role": {
                     "description": "Name of the role ('admin', 'creator' or 'member'. Optional. Default 'member')",
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.Delegate": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "is_org_member": {
+                    "type": "boolean"
+                },
+                "is_robot": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "'user' or 'team'",
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2546,6 +2640,24 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "Dto.Prototype": {
+            "type": "object",
+            "properties": {
+                "activating_user": {
+                    "$ref": "#/definitions/Dto.ActivatingUser"
+                },
+                "delegate": {
+                    "$ref": "#/definitions/Dto.Delegate"
+                },
+                "id": {
+                    "description": "UUID of the prototype",
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
