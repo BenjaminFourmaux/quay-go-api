@@ -45,6 +45,22 @@ definitions:
       name:
         type: string
     type: object
+  Dto.CreatePrototype:
+    properties:
+      activating_user_name:
+        type: string
+      delegate_kind:
+        type: string
+      delegate_name:
+        type: string
+      role:
+        type: string
+    required:
+    - activating_user_name
+    - delegate_kind
+    - delegate_name
+    - role
+    type: object
   Dto.CreateRepository:
     properties:
       description:
@@ -830,6 +846,44 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List the existing prototypes for this organization
+      tags:
+      - Prototype
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission prototype
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Prototype metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreatePrototype'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new permission prototype
       tags:
       - Prototype
   /api/v1/organization/{orgname}/team:

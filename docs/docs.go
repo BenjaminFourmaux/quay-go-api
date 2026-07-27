@@ -526,6 +526,65 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new permission prototype",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "Create a new permission prototype",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Prototype metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreatePrototype"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Prototype"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/organization/{orgname}/team": {
@@ -2418,6 +2477,29 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.CreatePrototype": {
+            "type": "object",
+            "required": [
+                "activating_user_name",
+                "delegate_kind",
+                "delegate_name",
+                "role"
+            ],
+            "properties": {
+                "activating_user_name": {
+                    "type": "string"
+                },
+                "delegate_kind": {
+                    "type": "string"
+                },
+                "delegate_name": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 }
             }

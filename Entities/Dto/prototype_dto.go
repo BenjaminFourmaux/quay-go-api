@@ -22,3 +22,10 @@ type Delegate struct {
 	IsOrgMember bool   `json:"is_org_member"`
 	Avatar      Avatar `json:"avatar"`
 }
+
+type CreatePrototype struct {
+	Role               string `json:"role" binding:"required"`
+	ActivatingUserName string `json:"activating_user_name" binding:"required"`
+	DelegateName       string `json:"delegate_name" binding:"required"`
+	DelegateKind       string `json:"delegate_kind" binding:"required"`
+}
