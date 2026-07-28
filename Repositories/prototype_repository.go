@@ -22,6 +22,15 @@ func GetOrganizationPrototypes(orgId int) ([]Models.PermissionPrototype, error) 
 func GetOrganizationPrototypeByUUID(orgId int, uuid string) (Models.PermissionPrototype, error) {
 	var prototype Models.PermissionPrototype
 	err := Database.DB.
+		Where("org_id = ? AND uuid = ?", orgId, uuid).
+		First(&prototype).
+		Error
+	return prototype, err
+}
+
+func GetOrganizationPrototypeDetailsByUUID(orgId int, uuid string) (Models.PermissionPrototype, error) {
+	var prototype Models.PermissionPrototype
+	err := Database.DB.
 		Preload("Organization").
 		Preload("ActivatingUser").
 		Preload("DelegateUser").
@@ -45,6 +54,14 @@ func CreatePermissionPrototype(prototype *Models.PermissionPrototype) (*Models.P
 		Preload("Role").
 		First(prototype, prototype.ID).Error
 	return prototype, err
+}
+
+func UpdatePermissionPrototype(prototype *Models.PermissionPrototype) (*Models.PermissionPrototype, error) {
+	err := Database.DB.Save(prototype).Error
+	if err != nil {
+		return nil, err
+	}
+	return prototype, nil
 }
 
 func DeletePermissionPrototype(prototypeId int) error {

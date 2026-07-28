@@ -29,3 +29,7 @@ type CreatePrototype struct {
 	DelegateName       string `json:"delegate_name" binding:"required"`
 	DelegateKind       string `json:"delegate_kind" binding:"required"`
 }
+
+type UpdatePrototype struct {
+	Role string `json:"role" binding:"required"` // Can be one of 'admin', 'write' or 'read'
+}

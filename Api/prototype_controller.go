@@ -15,8 +15,8 @@ func prototypeController() {
 		prototype.GET("", listPrototypes)
 		prototype.POST("", createPrototype)
 		prototype.GET("/:prototypeId", getPrototypeDetails)
-		/*prototype.DELETE("/:prototypeId", deletePrototype)
-		prototype.PATCH("/:prototypeId", updatePrototype)*/
+		prototype.DELETE("/:prototypeId", deletePrototype)
+		prototype.PATCH("/:prototypeId", updatePrototype)
 	}
 }
 
@@ -110,4 +110,67 @@ func getPrototypeDetails(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, prototype)
+}
+
+// deletePrototype Delete a repository prototype by its ID
+// @Description Delete a repository prototype by its ID
+// @Summary Delete a repository prototype by its ID
+// @Tags Prototype
+// @Param orgname path string true "Name of the organization"
+// @Param prototypeId path string true "ID of the prototype (UUID)"
+// @Success 204
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/prototypes/{prototypeId} [delete]
+func deletePrototype(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	prototypeId := c.Param("prototypeId")
+
+	err := Services.DeletePrototype(orgname, prototypeId, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+// updatePrototype Update permission prototype role
+// @Description Update permission prototype role
+// @Summary  Update permission prototype role
+// @Tags Prototype
+// @Accept json
+// @Param orgname path string true "Name of the organization"
+// @Param prototypeId path string true "ID of the prototype (UUID)"
+// @Param update body Dto.UpdatePrototype true "Prototype details to change"
+// @Success 200 {object} Dto.Prototype
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/prototypes/{prototypeId} [patch]
+func updatePrototype(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	prototypeId := c.Param("prototypeId")
+
+	var prototypeToUpdate Dto.UpdatePrototype
+	_ = c.BindJSON(&prototypeToUpdate)
+
+	updatedPrototype, err := Services.UpdatePrototype(orgname, prototypeId, prototypeToUpdate, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, updatedPrototype)
 }

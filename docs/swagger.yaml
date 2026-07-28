@@ -382,6 +382,14 @@ definitions:
       tag_expiration_s:
         type: integer
     type: object
+  Dto.UpdatePrototype:
+    properties:
+      role:
+        description: Can be one of 'admin', 'write' or 'read'
+        type: string
+    required:
+    - role
+    type: object
   Dto.UpdateRepository:
     properties:
       description:
@@ -887,6 +895,39 @@ paths:
       tags:
       - Prototype
   /api/v1/organization/{orgname}/prototypes/{prototypeId}:
+    delete:
+      description: Delete a repository prototype by its ID
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a repository prototype by its ID
+      tags:
+      - Prototype
     get:
       description: Get a repository prototype by its ID
       parameters:
@@ -920,6 +961,41 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a repository prototype by its ID
+      tags:
+      - Prototype
+    patch:
+      consumes:
+      - application/json
+      description: Update permission prototype role
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      - description: Prototype details to change
+        in: body
+        name: update
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdatePrototype'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update permission prototype role
       tags:
       - Prototype
   /api/v1/organization/{orgname}/team:

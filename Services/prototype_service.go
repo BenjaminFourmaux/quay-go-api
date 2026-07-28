@@ -183,7 +183,7 @@ func GetPrototype(orgName string, prototypeUUID string, currentUser Auth.Authent
 	}
 
 	// Get the prototype
-	prototypeModel, err := Repositories.GetOrganizationPrototypeByUUID(orgModel.ID, prototypeUUID)
+	prototypeModel, err := Repositories.GetOrganizationPrototypeDetailsByUUID(orgModel.ID, prototypeUUID)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -210,4 +210,97 @@ func GetPrototype(orgName string, prototypeUUID string, currentUser Auth.Authent
 	}
 
 	return Common.ConvertPermissionPrototypeModelToDto(prototypeModel, activatingUserOrgMember, delegateOrgMember), nil
+}
+
+func DeletePrototype(orgName string, prototypeUUID string, currentUser Auth.AuthenticatedUser) error {
+	logger.Info("[Prototype Service] Delete Prototype")
+	logger.Info("Organization: %s", orgName)
+	logger.Info("Prototype UUID: %s", prototypeUUID)
+
+	// Retrieve organization and check if exists
+	logger.Info("Retrieving organization details from database")
+	orgModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Organization not found: %s", orgName)
+			return Errors.OrganizationNotFound(orgName)
+		default:
+			logger.Error("Error retrieving organization details from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Get the prototype
+	prototypeModel, err := Repositories.GetOrganizationPrototypeByUUID(orgModel.ID, prototypeUUID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Prototype not found: %s", prototypeUUID)
+			return Errors.PrototypeNotFound(prototypeUUID)
+		default:
+			logger.Error("Error retrieving prototype from database: %s", err.Error())
+			return err
+		}
+	}
+
+	// Delete
+	err = Repositories.DeletePermissionPrototype(prototypeModel.ID)
+	if err != nil {
+		logger.Error("Error deleting prototype from database: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func UpdatePrototype(orgName string, prototypeUUID string, prototypeToUpdate Dto.UpdatePrototype, currentUser Auth.AuthenticatedUser) (Dto.Prototype, error) {
+	logger.Info("[Prototype Service] Update Prototype")
+	logger.Info("Organization: %s", orgName)
+	logger.Info("Prototype UUID: %s", prototypeUUID)
+	logger.Info("With role: %s", prototypeToUpdate.Role)
+
+	// Validate inputs
+	if !Common.IsValidRepositoryPermissionRole(prototypeToUpdate.Role) {
+		logger.Warning("Invalid role: %s", prototypeToUpdate.Role)
+		return Dto.Prototype{}, Errors.RepositoryPermissionRoleInvalid(prototypeToUpdate.Role)
+	}
+
+	// Retrieve organization and check if exists
+	logger.Info("Retrieving organization details from database")
+	orgModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Organization not found: %s", orgName)
+			return Dto.Prototype{}, Errors.OrganizationNotFound(orgName)
+		default:
+			logger.Error("Error retrieving organization details from database: %s", err.Error())
+			return Dto.Prototype{}, err
+		}
+	}
+
+	// Get the prototype
+	prototypeModel, err := Repositories.GetOrganizationPrototypeDetailsByUUID(orgModel.ID, prototypeUUID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Prototype not found: %s", prototypeUUID)
+			return Dto.Prototype{}, Errors.PrototypeNotFound(prototypeUUID)
+		default:
+			logger.Error("Error retrieving prototype from database: %s", err.Error())
+			return Dto.Prototype{}, err
+		}
+	}
+
+	// Update the prototype
+	prototypeModel.RoleId = Common.GetRoleIdFromRoleName(prototypeToUpdate.Role)
+
+	updatedPrototypeModel, err := Repositories.UpdatePermissionPrototype(&prototypeModel)
+	if err != nil {
+		logger.Error("Error updating prototype in database: %s", err.Error())
+		return Dto.Prototype{}, err
+	}
+
+	return Common.ConvertPermissionPrototypeModelToDto(*updatedPrototypeModel, false, false), nil
 }
