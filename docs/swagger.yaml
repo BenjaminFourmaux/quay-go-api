@@ -2146,11 +2146,15 @@ paths:
         name: name
         required: true
         type: string
+      - description: Format of the output (html, json, svg, png). Default is html
+        in: query
+        name: format
+        type: string
       responses:
         "200":
           description: OK
           schema:
-            type: html
+            $ref: '#/definitions/Dto.Avatar'
         "400":
           description: Bad Request invalid avatar kind
           schema:

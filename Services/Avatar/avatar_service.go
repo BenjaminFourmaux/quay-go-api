@@ -1,10 +1,18 @@
 package Avatar
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 	"html"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
 	"math"
 	"net/http"
 	"quay-go-api/Entities/Dto"
@@ -21,6 +29,7 @@ var AvatarColors = []string{"#969696", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c
 	"#b5cf6b", "#a1d99b", "#8c6d31", "#ad494a", "#e7ba52", "#a55194"}
 
 const defaultMailAvatarSize = 16
+const defaultPNGAvatarSize = 32
 
 var gravatarBaseURL = "https://secure.gravatar.com/avatar"
 var avatarHTTPClient = &http.Client{Timeout: 5 * time.Second}
@@ -68,9 +77,9 @@ func GetAvatarForTeam(team Models.Team) Dto.Avatar {
 }
 
 /*
-GetHTML Returns the full HTML and CSS for viewing the avatar of the given user/organization/team
+ToHTML Returns the full HTML and CSS for viewing the avatar of the given user/organization/team
 */
-func GetHTML(name string, emailOrId string, size int, kind string) string {
+func ToHTML(name string, emailOrId string, size int, kind string) string {
 	if size <= 0 {
 		size = defaultMailAvatarSize
 	}
@@ -117,6 +126,61 @@ func GetHTML(name string, emailOrId string, size int, kind string) string {
 		radius,
 		letter,
 	)
+}
+
+/*
+ToJSON return the avatar in JSON format
+*/
+func ToJSON(name, emailOrId string, kind string) Dto.Avatar {
+
+	return getAvatar(name, emailOrId, kind)
+}
+
+/*
+ToPNG return the avatar in PNG format (an image)
+*/
+func ToPNG(name, emailOrId string, size int, kind string) ([]byte, error) {
+	if size <= 0 {
+		size = defaultPNGAvatarSize
+	}
+
+	if kind == "" {
+		kind = "user"
+	}
+
+	data := getAvatar(name, emailOrId, kind)
+
+	img := image.NewRGBA(image.Rect(0, 0, size, size))
+
+	bg := parseHexColor(data.Color)
+
+	// Draw background
+	draw.Draw(img, img.Bounds(), &image.Uniform{bg}, image.Point{}, draw.Src)
+
+	letter := getAvatarLetter(data.Name, kind)
+
+	// Draw the initial letter
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.White,
+		Face: basicfont.Face7x13,
+	}
+
+	textWidth := d.MeasureString(letter).Round()
+
+	x := (size - textWidth) / 2
+	y := size/2 + 6
+
+	d.Dot = fixed.P(x, y)
+	d.DrawString(letter)
+
+	var buf bytes.Buffer
+	err := png.Encode(&buf, img)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func computeHash(usernameEmailOrId string) string {
@@ -183,4 +247,16 @@ func getAvatarLetter(name string, kind string) string {
 	}
 
 	return html.EscapeString(string(firstRune))
+}
+
+func parseHexColor(s string) color.RGBA {
+	var c color.RGBA
+	c.A = 255
+
+	if len(s) != 7 || s[0] != '#' {
+		return color.RGBA{100, 100, 100, 255}
+	}
+
+	fmt.Sscanf(s, "#%02x%02x%02x", &c.R, &c.G, &c.B)
+	return c
 }

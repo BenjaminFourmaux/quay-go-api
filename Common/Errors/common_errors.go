@@ -18,6 +18,18 @@ func InternalServerError() *ApiError {
 	}
 }
 
+func InternalServerErrorWithMsg(msg string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusInternalServerError,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "internal_server_error",
+				Message: msg,
+			},
+		},
+	}
+}
+
 func Unauthorized() *ApiError {
 	return &ApiError{
 		StatusCode: http.StatusUnauthorized,

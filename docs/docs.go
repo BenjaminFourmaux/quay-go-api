@@ -2529,13 +2529,19 @@ const docTemplate = `{
                         "name": "name",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Format of the output (html, json, svg, png). Default is html",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "html"
+                            "$ref": "#/definitions/Dto.Avatar"
                         }
                     },
                     "400": {
