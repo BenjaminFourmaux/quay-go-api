@@ -159,6 +159,10 @@ func IsValidRepositoryKind(kind string) bool {
 	return kind == "image" || kind == "application"
 }
 
+func IsValidPrototypeDelegateKind(kind string) bool {
+	return kind == "user" || kind == "team"
+}
+
 /*
 IsValidRepositoryName checks if the repository name is valid (e.g., "my-repo", "user_name/my-repo", "username123/my-repo")
 */

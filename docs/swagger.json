@@ -468,6 +468,278 @@
                 }
             }
         },
+        "/api/v1/organization/{orgname}/prototypes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List the existing prototypes for this organization",
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "List the existing prototypes for this organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Prototype"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new permission prototype",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "Create a new permission prototype",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Prototype metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreatePrototype"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Prototype"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organization/{orgname}/prototypes/{prototypeId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a repository prototype by its ID",
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "Get a repository prototype by its ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the prototype (UUID)",
+                        "name": "prototypeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Prototype"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a repository prototype by its ID",
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "Delete a repository prototype by its ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the prototype (UUID)",
+                        "name": "prototypeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update permission prototype role",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prototype"
+                ],
+                "summary": "Update permission prototype role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the prototype (UUID)",
+                        "name": "prototypeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Prototype details to change",
+                        "name": "update",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.UpdatePrototype"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Prototype"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -2249,13 +2521,19 @@
                         "name": "name",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Format of the output (html, json, svg, png). Default is html",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "html"
+                            "$ref": "#/definitions/Dto.Avatar"
                         }
                     },
                     "400": {
@@ -2292,6 +2570,27 @@
         }
     },
     "definitions": {
+        "Dto.ActivatingUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "is_org_member": {
+                    "type": "boolean"
+                },
+                "is_robot": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "'user' or 'team'",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "Dto.AddManifestLabel": {
             "type": "object",
             "properties": {
@@ -2341,6 +2640,29 @@
                 }
             }
         },
+        "Dto.CreatePrototype": {
+            "type": "object",
+            "required": [
+                "activating_user_name",
+                "delegate_kind",
+                "delegate_name",
+                "role"
+            ],
+            "properties": {
+                "activating_user_name": {
+                    "type": "string"
+                },
+                "delegate_kind": {
+                    "type": "string"
+                },
+                "delegate_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
         "Dto.CreateRepository": {
             "type": "object",
             "properties": {
@@ -2374,6 +2696,27 @@
                 },
                 "role": {
                     "description": "Name of the role ('admin', 'creator' or 'member'. Optional. Default 'member')",
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.Delegate": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/Dto.Avatar"
+                },
+                "is_org_member": {
+                    "type": "boolean"
+                },
+                "is_robot": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "'user' or 'team'",
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2538,6 +2881,24 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "Dto.Prototype": {
+            "type": "object",
+            "properties": {
+                "activating_user": {
+                    "$ref": "#/definitions/Dto.ActivatingUser"
+                },
+                "delegate": {
+                    "$ref": "#/definitions/Dto.Delegate"
+                },
+                "id": {
+                    "description": "UUID of the prototype",
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
@@ -2783,6 +3144,18 @@
                 },
                 "tag_expiration_s": {
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.UpdatePrototype": {
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "role": {
+                    "description": "Can be one of 'admin', 'write' or 'read'",
+                    "type": "string"
                 }
             }
         },

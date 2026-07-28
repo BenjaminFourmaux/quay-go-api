@@ -359,4 +359,22 @@ func isUserIsOrgOwner(userId int, organization Models.User) bool {
 	return false // the user isn't in 'owners' team
 }
 
+func isUserOrgMember(userId int, orgId int) bool {
+	isMember, err := Repositories.CheckIfUserIsOrgMember(userId, orgId)
+	if err != nil {
+		logger.Error("Error checking if user is organization member: %s", err.Error())
+		return false
+	}
+	return isMember
+}
+
+func isTeamOrgMember(teamId int, orgId int) bool {
+	isMember, err := Repositories.CheckIfTeamIsOrgMember(teamId, orgId)
+	if err != nil {
+		logger.Error("Error checking if team is organization member: %s", err.Error())
+		return false
+	}
+	return isMember
+}
+
 // </editor-fold>

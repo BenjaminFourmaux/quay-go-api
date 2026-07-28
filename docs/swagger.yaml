@@ -1,4 +1,18 @@
 definitions:
+  Dto.ActivatingUser:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      is_org_member:
+        type: boolean
+      is_robot:
+        type: boolean
+      kind:
+        description: '''user'' or ''team'''
+        type: string
+      name:
+        type: string
+    type: object
   Dto.AddManifestLabel:
     properties:
       key:
@@ -31,6 +45,22 @@ definitions:
       name:
         type: string
     type: object
+  Dto.CreatePrototype:
+    properties:
+      activating_user_name:
+        type: string
+      delegate_kind:
+        type: string
+      delegate_name:
+        type: string
+      role:
+        type: string
+    required:
+    - activating_user_name
+    - delegate_kind
+    - delegate_name
+    - role
+    type: object
   Dto.CreateRepository:
     properties:
       description:
@@ -55,6 +85,20 @@ definitions:
       role:
         description: Name of the role ('admin', 'creator' or 'member'. Optional. Default
           'member')
+        type: string
+    type: object
+  Dto.Delegate:
+    properties:
+      avatar:
+        $ref: '#/definitions/Dto.Avatar'
+      is_org_member:
+        type: boolean
+      is_robot:
+        type: boolean
+      kind:
+        description: '''user'' or ''team'''
+        type: string
+      name:
         type: string
     type: object
   Dto.Manifest:
@@ -164,6 +208,18 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  Dto.Prototype:
+    properties:
+      activating_user:
+        $ref: '#/definitions/Dto.ActivatingUser'
+      delegate:
+        $ref: '#/definitions/Dto.Delegate'
+      id:
+        description: UUID of the prototype
+        type: string
+      role:
+        type: string
     type: object
   Dto.Repository:
     properties:
@@ -325,6 +381,14 @@ definitions:
         type: string
       tag_expiration_s:
         type: integer
+    type: object
+  Dto.UpdatePrototype:
+    properties:
+      role:
+        description: Can be one of 'admin', 'write' or 'read'
+        type: string
+    required:
+    - role
     type: object
   Dto.UpdateRepository:
     properties:
@@ -759,6 +823,181 @@ paths:
       summary: List organization's members
       tags:
       - Organization
+  /api/v1/organization/{orgname}/prototypes:
+    get:
+      description: List the existing prototypes for this organization
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.Prototype'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List the existing prototypes for this organization
+      tags:
+      - Prototype
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission prototype
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Prototype metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreatePrototype'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new permission prototype
+      tags:
+      - Prototype
+  /api/v1/organization/{orgname}/prototypes/{prototypeId}:
+    delete:
+      description: Delete a repository prototype by its ID
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a repository prototype by its ID
+      tags:
+      - Prototype
+    get:
+      description: Get a repository prototype by its ID
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository prototype by its ID
+      tags:
+      - Prototype
+    patch:
+      consumes:
+      - application/json
+      description: Update permission prototype role
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      - description: Prototype details to change
+        in: body
+        name: update
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.UpdatePrototype'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update permission prototype role
+      tags:
+      - Prototype
   /api/v1/organization/{orgname}/team:
     get:
       description: List organization's teams with optional filtering
@@ -1907,11 +2146,15 @@ paths:
         name: name
         required: true
         type: string
+      - description: Format of the output (html, json, svg, png). Default is html
+        in: query
+        name: format
+        type: string
       responses:
         "200":
           description: OK
           schema:
-            type: html
+            $ref: '#/definitions/Dto.Avatar'
         "400":
           description: Bad Request invalid avatar kind
           schema:

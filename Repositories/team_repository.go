@@ -30,6 +30,19 @@ func GetTeamDetailsById(teamId int) (Models.Team, error) {
 	return team, err
 }
 
+func GetTeamByName(teamName string) (Models.Team, error) {
+	var team Models.Team
+	err := Database.DB.
+		Preload("Role").
+		Preload("Members").
+		Preload("Members.User").
+		Preload("TeamMemberInvites").
+		Where("name = ?", teamName).
+		First(&team).
+		Error
+	return team, err
+}
+
 /*
 GetOrganizationTeamsByOrgId returns organization teams with Role, Members, Members.User and TeamMemberInvites preloaded
 */

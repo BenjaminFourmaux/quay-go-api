@@ -1,7 +1,6 @@
 package Services
 
 import (
-	"github.com/google/uuid"
 	"quay-go-api/Common"
 	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
@@ -221,7 +220,7 @@ func CreateManifestLabel(repositoryNamespaced string, manifestRef string, addLab
 
 	// Create model to insert
 	createLabelModel := Models.Label{
-		UUID:         uuid.New().String(),
+		UUID:         Common.GenerateUUID(),
 		Key:          addLabel.Key,
 		Value:        addLabel.Value,
 		MediaTypeId:  1, // 1 => text/plain

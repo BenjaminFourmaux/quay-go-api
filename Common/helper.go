@@ -2,6 +2,7 @@ package Common
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"reflect"
 	"strings"
 	"time"
@@ -168,6 +169,10 @@ func ConvertMsToTime(ms *int64) *time.Time {
 		t := time.UnixMilli(*ms)
 		return &t
 	}
+}
+
+func GenerateUUID() string {
+	return uuid.New().String()
 }
 
 /*

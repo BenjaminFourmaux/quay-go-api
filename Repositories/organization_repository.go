@@ -172,3 +172,24 @@ func UpdateOrganizationFieldsById(orgId int, fields map[string]interface{}) erro
 
 	return nil
 }
+
+func CheckIfUserIsOrgMember(userId int, orgId int) (bool, error) {
+	var count int64
+
+	err := Database.DB.Model(&Models.TeamMember{}).
+		Joins("JOIN team ON team.id = teammember.team_id").
+		Where("teammember.user_id = ?", userId).
+		Where("team.organization_id = ?", orgId).
+		Count(&count).Error
+
+	return count > 0, err
+}
+
+func CheckIfTeamIsOrgMember(teamId int, orgId int) (bool, error) {
+	var count int64
+	err := Database.DB.Model(&Models.Team{}).
+		First(&Models.TeamMember{}, "id = ? and organization_id = ?", teamId, orgId).
+		Count(&count).
+		Error
+	return count > 0, err
+}
