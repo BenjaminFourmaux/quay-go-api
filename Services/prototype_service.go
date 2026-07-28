@@ -133,6 +133,12 @@ func CreatePrototype(orgName string, prototypeDto Dto.CreatePrototype, currentUs
 		createPrototype.DelegateTeamId = &delegateTeamId
 	}
 
+	// Check if record already exists and avoid duplicate (not managed in DB with unique constraint (Quay ...))
+	existPrototypeModel, err := Repositories.CheckIfPermissionPrototypeExists(orgModel.ID, createPrototype.ActivatingUserId, createPrototype.DelegateUserId, createPrototype.DelegateTeamId)
+	if err == nil {
+		return Dto.Prototype{}, Errors.PrototypeAlreadyExists(existPrototypeModel.UUID)
+	}
+
 	// Create the model into the database
 	createdPrototypeModel, err := Repositories.CreatePermissionPrototype(&createPrototype)
 	if err != nil {
@@ -155,4 +161,53 @@ func CreatePrototype(orgName string, prototypeDto Dto.CreatePrototype, currentUs
 	}
 
 	return Common.ConvertPermissionPrototypeModelToDto(*createdPrototypeModel, activatingUserOrgMember, delegateOrgMember), nil
+}
+
+func GetPrototype(orgName string, prototypeUUID string, currentUser Auth.AuthenticatedUser) (Dto.Prototype, error) {
+	logger.Info("[Prototype Service] Get Prototype")
+	logger.Info("Organization: %s", orgName)
+	logger.Info("Prototype UUID: %s", prototypeUUID)
+
+	// Retrieve organization and check if exists
+	logger.Info("Retrieving organization details from database")
+	orgModel, err := Repositories.GetOrganizationDetailsByName(orgName)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Organization not found: %s", orgName)
+			return Dto.Prototype{}, Errors.OrganizationNotFound(orgName)
+		default:
+			logger.Error("Error retrieving organization details from database: %s", err.Error())
+			return Dto.Prototype{}, err
+		}
+	}
+
+	// Get the prototype
+	prototypeModel, err := Repositories.GetOrganizationPrototypeByUUID(orgModel.ID, prototypeUUID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("Prototype not found: %s", prototypeUUID)
+			return Dto.Prototype{}, Errors.PrototypeNotFound(prototypeUUID)
+		default:
+			logger.Error("Error retrieving prototype from database: %s", err.Error())
+			return Dto.Prototype{}, err
+		}
+	}
+
+	// Determine if user/team are org member
+	var activatingUserOrgMember bool = false
+	var delegateOrgMember bool = false
+
+	if prototypeModel.ActivatingUserId != nil {
+		activatingUserOrgMember = isUserOrgMember(*prototypeModel.ActivatingUserId, orgModel.ID)
+	}
+	if prototypeModel.DelegateUserId != nil {
+		delegateOrgMember = isUserOrgMember(*prototypeModel.DelegateUserId, orgModel.ID)
+	}
+	if prototypeModel.DelegateTeamId != nil {
+		delegateOrgMember = isTeamOrgMember(*prototypeModel.DelegateTeamId, orgModel.ID)
+	}
+
+	return Common.ConvertPermissionPrototypeModelToDto(prototypeModel, activatingUserOrgMember, delegateOrgMember), nil
 }

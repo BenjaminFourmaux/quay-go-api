@@ -14,8 +14,8 @@ func prototypeController() {
 		prototype.Use(authorizedMiddleware)
 		prototype.GET("", listPrototypes)
 		prototype.POST("", createPrototype)
-		/*prototype.GET("/:prototypeId", getPrototypeDetails)
-		prototype.DELETE("/:prototypeId", deletePrototype)
+		prototype.GET("/:prototypeId", getPrototypeDetails)
+		/*prototype.DELETE("/:prototypeId", deletePrototype)
 		prototype.PATCH("/:prototypeId", updatePrototype)*/
 	}
 }
@@ -80,4 +80,34 @@ func createPrototype(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newPrototype)
+}
+
+// getPrototypeDetails Get a repository prototype by its ID
+// @Description Get a repository prototype by its ID
+// @Summary Get a repository prototype by its ID
+// @Tags Prototype
+// @Param orgname path string true "Name of the organization"
+// @Param prototypeId path string true "ID of the prototype (UUID)"
+// @Success 200 {object} Dto.Prototype
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/prototypes/{prototypeId} [get]
+func getPrototypeDetails(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{Auth.OrgAdmin})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgname := c.Param("orgname")
+	prototypeId := c.Param("prototypeId")
+
+	prototype, err := Services.GetPrototype(orgname, prototypeId, currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, prototype)
 }

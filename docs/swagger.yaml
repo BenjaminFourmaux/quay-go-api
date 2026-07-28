@@ -886,6 +886,42 @@ paths:
       summary: Create a new permission prototype
       tags:
       - Prototype
+  /api/v1/organization/{orgname}/prototypes/{prototypeId}:
+    get:
+      description: Get a repository prototype by its ID
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: ID of the prototype (UUID)
+        in: path
+        name: prototypeId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Prototype'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a repository prototype by its ID
+      tags:
+      - Prototype
   /api/v1/organization/{orgname}/team:
     get:
       description: List organization's teams with optional filtering
