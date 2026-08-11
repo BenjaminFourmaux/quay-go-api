@@ -59,15 +59,16 @@ docker run -d -e DB_TYPE=postgres -e DB_DSN=postgres://user:password@localhost:5
 
 ## Features ✨
 
+- **More endpoints"" — Adding some new endpoints for better objects manipulation and automation.
 - **Direct database connection** — Connects directly to the Quay database, bypassing the Quay API layer.
 - **Improved error handling** — Structured and consistent error responses for easier debugging and integration.
 - **Better REST compliance** — Follows REST principles more closely with proper HTTP methods, status codes, and resource naming.
 
 ## Documentation 📚
 
-You can find the API documentation in the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/BenjaminFourmaux/quay-go-api/refs/heads/main/docs/swagger.json).
+You can find the API documentation in the [Swagger](https://editor.swagger.io/?url=https://raw.githubusercontent.com/BenjaminFourmaux/quay-go-api/refs/heads/main/docs/swagger.json).
 
-You can find more details about the API implementation in the [Wiki](https://github.com/BenjaminFourmaux/quay-go-api/wiki).
+You can find more details about the API implementation, models, errors... in the [Wiki](https://github.com/BenjaminFourmaux/quay-go-api/wiki).
 
 ## Version
 
