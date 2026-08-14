@@ -1802,6 +1802,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/repository/{repository}/manifest/{manifestRef}/security": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get security scan report for a manifest",
+                "tags": [
+                    "SecurityScan"
+                ],
+                "summary": "Get security scan report for a manifest",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository name in the format namespace/repository",
+                        "name": "repository",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Manifest reference sha256",
+                        "name": "manifestRef",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include CVEs information",
+                        "name": "include_cve",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.SecScanReport"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/repository/{repository}/permissions/team": {
             "get": {
                 "security": [
@@ -2532,7 +2594,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Format of the output (html, json, svg, png). Default is html",
+                        "description": "Format of the output (html, json, png). Default is html",
                         "name": "format",
                         "in": "query"
                     }
@@ -3042,6 +3104,20 @@ const docTemplate = `{
                 }
             }
         },
+        "Dto.SecScanReport": {
+            "type": "object",
+            "properties": {
+                "cves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Dto.VulnerabilityCVE"
+                    }
+                },
+                "vulnerabilities": {
+                    "$ref": "#/definitions/Dto.Vulnerabilities"
+                }
+            }
+        },
         "Dto.Tag": {
             "type": "object",
             "properties": {
@@ -3342,6 +3418,34 @@ const docTemplate = `{
                 },
                 "unspecified": {
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.VulnerabilityCVE": {
+            "type": "object",
+            "properties": {
+                "affected_packages": {
+                    "type": "string"
+                },
+                "affected_versions": {
+                    "type": "string"
+                },
+                "cve_id": {
+                    "type": "string"
+                },
+                "fixable": {
+                    "description": "version in witch this vulnerability is fixed, if empty then it is not fixable",
+                    "type": "string"
+                },
+                "present_in": {
+                    "description": "'layer' or 'base'",
+                    "type": "string"
+                },
+                "published_date": {
+                    "type": "string"
+                },
+                "severity_score": {
+                    "type": "number"
                 }
             }
         },

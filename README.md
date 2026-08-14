@@ -9,6 +9,9 @@ That is why I decided to take over this API in Go to make it RESTful and provide
 
 This API can be deployed alongside the Quay Registry and interfaces with it via its database.
 
+> [!IMPORTANT]
+> Quay API reimplementation: **70%**
+
 ## Get stated :rocket:
 
 ### Local 💻

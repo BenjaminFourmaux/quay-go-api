@@ -48,6 +48,7 @@ func endpointsRegistration() {
 	tagController()
 	manifestController()
 	prototypeController()
+	secScanController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
