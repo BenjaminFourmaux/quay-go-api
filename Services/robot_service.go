@@ -1,15 +1,32 @@
 package Services
 
 import (
+	"database/sql"
+	"encoding/json"
 	"quay-go-api/Common"
+	"quay-go-api/Common/Errors"
 	"quay-go-api/Entities/Dto"
+	"quay-go-api/Entities/Models"
 	"quay-go-api/Repositories"
 	"quay-go-api/Services/Auth"
 	logger "quay-go-api/Services/Logger"
+	"strconv"
+	"time"
 )
 
 func ListUserRobots(filters map[string]string, currentUser *Auth.AuthenticatedUser) ([]Dto.Robot, error) {
-	logger.Info("[Robot Service] List User Robots")
+	return listRobots(filters, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func ListOrganizationRobots(filters map[string]string, orgName string, currentUser *Auth.AuthenticatedUser) ([]Dto.Robot, error) {
+	return listRobots(filters, "organization", orgName, currentUser)
+}
+
+/*
+listRobots wrapper
+*/
+func listRobots(filters map[string]string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) ([]Dto.Robot, error) {
+	logger.Info("[Robot Service] List %s Robots accounts", kind)
 	logger.Debug("With filters: %+v", filters)
 
 	// Validating filters
@@ -22,11 +39,43 @@ func ListUserRobots(filters map[string]string, currentUser *Auth.AuthenticatedUs
 		includeRepositories = r == "true"
 	}
 
+	// Check if the user or org exists
+	var kindId int
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return []Dto.Robot{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return []Dto.Robot{}, err
+			}
+		}
+
+		kindId = userExist.ID
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return []Dto.Robot{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return []Dto.Robot{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+	}
+
 	// Get user associated robot accounts from db
-	robotUserModels, err := Repositories.GetUserRobots(currentUser.ID, includeToken, includeRepositories)
+	robotUserModels, err := Repositories.GetUserOrOrgRobots(kindId, includeToken, includeRepositories)
 	if err != nil {
-		logger.Error("Error retrieving user robots: %v", err)
-		return nil, err
+		logger.Error("Error retrieving %s robots: %v", kind, err)
+		return []Dto.Robot{}, err
 	}
 
 	// Convert models to DTOs
@@ -44,7 +93,7 @@ func ListUserRobots(filters map[string]string, currentUser *Auth.AuthenticatedUs
 			token, decryptErr := Common.DecryptAESCipherToken(robotModel.RobotAccountToken.Token)
 			if decryptErr != nil {
 				logger.Error("Error decrypting robot token for robot '%s': %v", robotModel.Username, decryptErr)
-				return nil, decryptErr
+				return []Dto.Robot{}, decryptErr
 			}
 
 			robotDTO.Token = &token
@@ -63,4 +112,147 @@ func ListUserRobots(filters map[string]string, currentUser *Auth.AuthenticatedUs
 	}
 
 	return robotDTOs, nil
+}
+
+func CreateUserRobot(robotToCreate Dto.CreateRobot, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	return createRobot(robotToCreate, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func CreateOrganizationRobot(robotToCreate Dto.CreateRobot, orgName string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	return createRobot(robotToCreate, "organization", orgName, currentUser)
+}
+
+/*
+createRobot wrapper
+*/
+func createRobot(robotToCreate Dto.CreateRobot, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	logger.Info("[Robot Service] Create %s Robot account", kind)
+	logger.Debug("With data: %+v", robotToCreate)
+
+	// Validate input
+	if err := Common.ValidateCreateRobotAccount(robotToCreate); err != nil {
+		logger.Error("Input validation error: %v", err)
+		return Dto.Robot{}, err
+	}
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return Dto.Robot{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return Dto.Robot{}, err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return Dto.Robot{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return Dto.Robot{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobots, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotToCreate.Name), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			// pass
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return Dto.Robot{}, err
+		}
+	} else {
+		if existingRobots.ID != 0 {
+			logger.Warning("A robot with the name %s already exists for %s", robotToCreate.Name, kindName)
+			return Dto.Robot{}, Errors.RobotAlreadyExists(Common.FormatRobotUsername(kindName, robotToCreate.Name))
+		}
+	}
+
+	// All validations passed
+	logger.Info("All validations passed")
+
+	// Create the models
+	var robotToCreateModel = Models.User{
+		UUID:                  Common.GenerateUUID(),
+		Username:              Common.FormatRobotUsername(kindName, robotToCreate.Name), // Format the robot name as <kindName>+<robotName>
+		Robot:                 true,                                                     // Yes, a user can be a real user, an org or a robot account
+		PasswordHash:          sql.NullString{},                                         // Robot accounts do not have a password
+		Email:                 Common.GenerateUUID(),                                    // Robot email is an uuid but idk where pointed, so I consider to be a random uuid
+		RemovedTagExpirationS: Common.DefaultTagExpirationSeconds,
+		Enabled:               true,
+		CreationDate:          sql.NullTime{Time: time.Now(), Valid: true},
+	}
+
+	var robotToCreateMetadataModel = Models.RobotAccountMetadata{
+		Description:      robotToCreate.Description,
+		UnstructuredJson: metadataMapToJSON(robotToCreate.UnstructuredMetadata),
+	}
+
+	// Generate a random token for the robot account and encrypt it
+	rawToken := Common.RandomStringGenerator(64)
+	encryptedToken, encryptErr := Common.EncryptAESCipherToken(rawToken)
+	if encryptErr != nil {
+		logger.Error("Error encrypting robot token: %v", encryptErr)
+		return Dto.Robot{}, encryptErr
+	}
+
+	var robotToCreateTokenModel = Models.RobotAccountToken{
+		Token:         encryptedToken,
+		FullyMigrated: true,
+	}
+
+	var robotFederatedLoginModel = Models.FederatedLogin{
+		ServiceId:    Common.MapLoginServiceId("quayrobot"),
+		MetadataJson: "{}",
+	}
+
+	// create the robot account in the db
+	robotCreatedModel, err := Repositories.CreateRobotAccount(robotToCreateModel, robotToCreateMetadataModel, robotToCreateTokenModel, robotFederatedLoginModel)
+	if err != nil {
+		logger.Error("Error when creating robot account: %s", err.Error())
+		return Dto.Robot{}, err
+	}
+
+	// Convert the created model to DTO
+	robotDTO := Dto.Robot{
+		Name:         robotCreatedModel.Username,
+		Description:  robotCreatedModel.RobotAccountMetadata.Description,
+		Created:      robotCreatedModel.CreationDate.Time,
+		LastAccessed: Common.ConvertSQLNullTimeToTime(robotCreatedModel.LastAccessed),
+	}
+
+	return robotDTO, nil
+}
+
+func metadataMapToJSON(metadata map[string]interface{}) string {
+	unstructuredMetadataJSON := "{}"
+	if metadata != nil {
+		metadataBytes, marshalErr := json.Marshal(metadata)
+		if marshalErr != nil {
+			logger.Error("Error marshaling robot unstructured metadata: %v", marshalErr)
+			return "{}"
+		}
+
+		unstructuredMetadataJSON = string(metadataBytes)
+	}
+	return unstructuredMetadataJSON
 }

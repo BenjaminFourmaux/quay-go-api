@@ -3,20 +3,24 @@ package Common
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/google/uuid"
+	aesccm "github.com/pschlump/AesCCM"
 	"math/big"
 	"os"
 	"quay-go-api/Common/Errors"
 	"strings"
-
-	"github.com/google/uuid"
-	aesccm "github.com/pschlump/AesCCM"
 )
 
-// DecryptAESCipherToken decrypts a base64 token encoded as IV + ciphertext
-// using AES-CBC with PKCS7 padding, compatible with the Python AESCipher class.
+/*
+DecryptAESCipherToken decrypts Quay encrypted tokens.
+Supported formats:
+  - v0$$<base64(nonce+ciphertext+tag)> (AES-CCM)
+  - <base64(iv+ciphertext)> (legacy AES-CBC + PKCS7)
+*/
 func DecryptAESCipherToken(encryptedToken string) (string, error) {
 	// Retrieve the AES key from the environment variable and decode it
 	encryptionKey := os.Getenv("DATABASE_SECRET_KEY")
@@ -29,6 +33,41 @@ func DecryptAESCipherToken(encryptedToken string) (string, error) {
 	}
 
 	return decryptLegacyAesCbcToken(encryptedToken, encryptionKey)
+}
+
+/*
+EncryptAESCipherToken encrypts a plaintext token to Quay versioned format (v0$$...).
+*/
+func EncryptAESCipherToken(plainToken string) (string, error) {
+	encryptionKey := os.Getenv("DATABASE_SECRET_KEY")
+	if encryptionKey == "" {
+		return "", Errors.QuayEncryptionKeyNotSet()
+	}
+
+	key, err := deriveQuaySecretKey(encryptionKey)
+	if err != nil {
+		return "", err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", fmt.Errorf("invalid AES key: %w", err)
+	}
+
+	ccmCipher, err := aesccm.NewCCM(block, 16, 13)
+	if err != nil {
+		return "", fmt.Errorf("unable to initialize AES-CCM: %w", err)
+	}
+
+	nonce := make([]byte, 13)
+	if _, err := rand.Read(nonce); err != nil {
+		return "", fmt.Errorf("unable to generate nonce: %w", err)
+	}
+
+	ciphertextWithTag := ccmCipher.Seal(nil, nonce, []byte(plainToken), nil)
+	payload := append(nonce, ciphertextWithTag...)
+
+	return "v0$$" + base64.StdEncoding.EncodeToString(payload), nil
 }
 
 func decryptQuayVersionedToken(encryptedToken string, encryptionKey string) (string, error) {

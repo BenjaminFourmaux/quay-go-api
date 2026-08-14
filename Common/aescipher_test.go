@@ -87,6 +87,29 @@ func TestDecryptAESCipherTokenWithQuayV0Format(t *testing.T) {
 	}
 }
 
+func TestEncryptAESCipherTokenRoundTrip(t *testing.T) {
+	t.Setenv("DATABASE_SECRET_KEY", "00112233-4455-6677-8899-aabbccddeeff")
+	plainToken := "RANDOMTOKEN0123456789"
+
+	encryptedToken, err := EncryptAESCipherToken(plainToken)
+	if err != nil {
+		t.Fatalf("unexpected error while encrypting token: %v", err)
+	}
+
+	if encryptedToken[:4] != "v0$$" {
+		t.Fatalf("expected token to start with v0$$, got %q", encryptedToken)
+	}
+
+	decryptedToken, err := DecryptAESCipherToken(encryptedToken)
+	if err != nil {
+		t.Fatalf("unexpected error while decrypting round-trip token: %v", err)
+	}
+
+	if decryptedToken != plainToken {
+		t.Fatalf("expected %q, got %q", plainToken, decryptedToken)
+	}
+}
+
 func buildEncryptedTokenForTest(t *testing.T, key []byte, iv []byte, plaintext []byte) string {
 	t.Helper()
 

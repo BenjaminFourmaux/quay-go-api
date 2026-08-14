@@ -2543,11 +2543,11 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "List user's robots accounts",
+                "description": "List current user's robots accounts",
                 "tags": [
                     "Robot"
                 ],
-                "summary": "List user's robots accounts",
+                "summary": "List current user's robots accounts",
                 "parameters": [
                     {
                         "type": "boolean",
@@ -2576,6 +2576,52 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create for the current user a robot account",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create for the current user a robot account",
+                "parameters": [
+                    {
+                        "description": "Robot metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreateRobot"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Robot"
                         }
                     },
                     "401": {
@@ -2808,6 +2854,21 @@ const docTemplate = `{
                 "namespace": {
                     "description": "Can be null if is a global repo, not organization scoped",
                     "type": "string"
+                }
+            }
+        },
+        "Dto.CreateRobot": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "unstructured_metadata": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },

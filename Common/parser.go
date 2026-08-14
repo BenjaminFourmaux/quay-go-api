@@ -6,6 +6,7 @@ import (
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Services/Auth"
 	"quay-go-api/Services/Avatar"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,6 +14,11 @@ import (
 func ParseTime(datetime string) time.Time {
 	t, _ := time.Parse(time.RFC3339, datetime)
 	return t
+}
+
+func ParseStringToInt(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
 }
 
 func ConvertSQLNullTimeToTime(nullTime sql.NullTime) *time.Time {

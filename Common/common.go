@@ -1,8 +1,11 @@
 package Common
 
 import (
+	"crypto/rand"
+	"math/big"
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Services/Auth"
+	"strings"
 )
 
 func HasScope(scopes []Auth.Scope, scope Auth.Scope) bool {
@@ -137,4 +140,60 @@ func MapLabelSourceType(sourceTypeId int) Models.LabelSourceType {
 	default:
 		return Models.LabelSourceType{ID: 0, Name: "unknown", Mutable: false}
 	}
+}
+
+func MapLoginServiceName(loginServiceId int) string {
+	switch loginServiceId {
+	case 1:
+		return "github"
+	case 2:
+		return "quayrobot"
+	case 3:
+		return "ldap"
+	case 4:
+		return "google"
+	case 5:
+		return "keystone"
+	case 6:
+		return "dex"
+	case 7:
+		return "jwtauthn"
+	default:
+		return "unknown"
+	}
+}
+
+func MapLoginServiceId(loginServiceName string) int {
+	switch strings.ToLower(loginServiceName) {
+	case "github":
+		return 1
+	case "quayrobot":
+		return 2
+	case "ldap":
+		return 3
+	case "google":
+		return 4
+	case "keystone":
+		return 5
+	case "dex":
+		return 6
+	case "jwtauthn":
+		return 7
+	default:
+		return 0
+	}
+}
+
+func FormatRobotUsername(username string, robotName string) string {
+	return username + "+" + robotName
+}
+
+func RandomStringGenerator(length int) string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" // ascii to upper + digits
+	result := make([]byte, length)
+	for i := range result {
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		result[i] = charset[n.Int64()]
+	}
+	return string(result)
 }

@@ -9,8 +9,8 @@ import (
 )
 
 /* DEV NOTE
-- function to check if a field is valid must be named like: IsValide<FieldName> and return a bool
 - function to validate a Dto must be named like: Validate<DtoName> and return an error
+- function to check if a field is valid must be named like: IsValide<FieldName> and return a bool
 */
 
 // <editor-fold desc="Validators">
@@ -79,7 +79,7 @@ func ValidateTeam(team Dto.CreateTeam) error {
 		return Errors.TeamNameRequired()
 	}
 
-	var reName = regexp.MustCompile(`^[a-z][a-z0-9]+$`)
+	var reName = regexp.MustCompile(TeamNamePattern)
 	if (len(*team.Name) < 2 && len(*team.Name) > 255) ||
 		!reName.MatchString(*team.Name) {
 		return Errors.TeamNameInvalid()
@@ -117,6 +117,20 @@ func ValidateUpdateRepositoryPermission(repositoryMetadata Dto.UpdateRepositoryP
 	if !IsValidRepositoryPermissionRole(repositoryMetadata.Role) {
 		return Errors.RepositoryPermissionRoleInvalid(repositoryMetadata.Role)
 	}
+	return nil
+}
+
+func ValidateCreateRobotAccount(robotMetadata Dto.CreateRobot) error {
+	// Validate robot name (required)
+	if robotMetadata.Name == "" || strings.TrimSpace(robotMetadata.Name) == "" {
+		return Errors.RobotNameRequired()
+	}
+
+	var reName = regexp.MustCompile(RobotNamePattern)
+	if !reName.MatchString(robotMetadata.Name) {
+		return Errors.RobotNameInvalid(RobotNamePattern)
+	}
+
 	return nil
 }
 
@@ -172,7 +186,7 @@ func IsValidRepositoryName(repositoryName string) bool {
 		return false
 	}
 
-	var reRepositoryName = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*)*$`)
+	var reRepositoryName = regexp.MustCompile(RepositoryNamePattern)
 	if len(repositoryName) > 255 || !reRepositoryName.MatchString(repositoryName) {
 		return false
 	}

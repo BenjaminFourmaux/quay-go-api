@@ -75,6 +75,16 @@ definitions:
         description: Can be null if is a global repo, not organization scoped
         type: string
     type: object
+  Dto.CreateRobot:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      unstructured_metadata:
+        additionalProperties: true
+        type: object
+    type: object
   Dto.CreateTeam:
     properties:
       description:
@@ -2200,7 +2210,7 @@ paths:
       - Tag
   /api/v1/user/robots:
     get:
-      description: List user's robots accounts
+      description: List current user's robots accounts
       parameters:
       - description: 'Show robot token (default: false)'
         in: query
@@ -2231,7 +2241,36 @@ paths:
             $ref: '#/definitions/Errors.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: List user's robots accounts
+      summary: List current user's robots accounts
+      tags:
+      - Robot
+    post:
+      consumes:
+      - application/json
+      description: Create for the current user a robot account
+      parameters:
+      - description: Robot metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/Dto.CreateRobot'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Dto.Robot'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create for the current user a robot account
       tags:
       - Robot
   /api/v1/users/me:

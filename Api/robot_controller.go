@@ -2,6 +2,8 @@ package Api
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"quay-go-api/Entities/Dto"
 	"quay-go-api/Services"
 	"quay-go-api/Services/Auth"
 )
@@ -11,6 +13,7 @@ func robotController() {
 	{
 		userRobot.Use(authorizedMiddleware)
 		userRobot.GET("", listUserRobots)
+		userRobot.POST("", createUserRobot)
 	}
 
 	organizationRobot := engine.Group("/api/v1/organization/:orgname/robots")
@@ -20,9 +23,9 @@ func robotController() {
 	}
 }
 
-// listUserRobots List user's robots accounts
-// @Description List user's robots accounts
-// @Summary List user's robots accounts
+// listUserRobots List current user's robots accounts
+// @Description List current user's robots accounts
+// @Summary List current user's robots accounts
 // @Tags Robot
 // @Param token query bool false "Show robot token (default: false)"
 // @Param repositories query bool false "Show robot repositories (default: false)"
@@ -42,11 +45,41 @@ func listUserRobots(c *gin.Context) {
 	// Get filters from query params
 	filters := extractFilters(c)
 
-	organizations, err := Services.ListUserRobots(filters, &currentUser)
+	robots, err := Services.ListUserRobots(filters, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
 	}
 
-	c.JSON(200, organizations)
+	c.JSON(http.StatusOK, robots)
+}
+
+// createUserRobot Create for the current user a robot account
+// @Description Create for the current user a robot account
+// @Summary Create for the current user a robot account
+// @Tags Robot
+// @Accept json
+// @Param message body Dto.CreateRobot true "Robot metadata"
+// @Success 201 {object} Dto.Robot
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots [post]
+func createUserRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	var robotToCreate Dto.CreateRobot
+	_ = c.BindJSON(&robotToCreate)
+
+	newRobot, err := Services.CreateUserRobot(robotToCreate, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, newRobot)
 }
