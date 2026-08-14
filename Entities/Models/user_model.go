@@ -29,9 +29,12 @@ type User struct {
 	LastAccessed             sql.NullTime   `gorm:"type:time without time zone;null"`     // Last accessed time, can be null
 
 	// Fk
-	FederatedLogins []FederatedLogin `gorm:"foreignKey:UserId;references:ID"`
-	Prompts         []UserPrompt     `gorm:"foreignKey:UserId;references:ID"`
-	Teams           []Team           `gorm:"foreignKey:OrganizationId;references:ID"` // Only for Organization
+	FederatedLogins       []FederatedLogin       `gorm:"foreignKey:UserId;references:ID"`
+	Prompts               []UserPrompt           `gorm:"foreignKey:UserId;references:ID"`
+	Teams                 []Team                 `gorm:"foreignKey:OrganizationId;references:ID"` // Only for Organization
+	RobotAccountMetadata  *RobotAccountMetadata  `gorm:"foreignKey:RobotAccountID;references:ID"`
+	RobotAccountToken     *RobotAccountToken     `gorm:"foreignKey:RobotAccountID;references:ID"`
+	RepositoryPermissions []RepositoryPermission `gorm:"foreignKey:UserId;references:ID"`
 }
 
 func (User) TableName() string {

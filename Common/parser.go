@@ -1,6 +1,7 @@
 package Common
 
 import (
+	"database/sql"
 	"quay-go-api/Entities/Dto"
 	"quay-go-api/Entities/Models"
 	"quay-go-api/Services/Auth"
@@ -12,6 +13,13 @@ import (
 func ParseTime(datetime string) time.Time {
 	t, _ := time.Parse(time.RFC3339, datetime)
 	return t
+}
+
+func ConvertSQLNullTimeToTime(nullTime sql.NullTime) *time.Time {
+	if nullTime.Valid {
+		return &nullTime.Time
+	}
+	return nil
 }
 
 func ConvertScopeStringInAuthScopes(scopesStr string) []Auth.Scope {

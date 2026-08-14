@@ -2528,6 +2528,63 @@
                 }
             }
         },
+        "/api/v1/user/robots": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List user's robots accounts",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List user's robots accounts",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Show robot token (default: false)",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Show robot repositories (default: false)",
+                        "name": "repositories",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Robot"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -3093,6 +3150,33 @@
                 "size": {
                     "description": "In bits",
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.Robot": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "last_accessed": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repositories": {
+                    "description": "List of repository names the robot has access to",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },

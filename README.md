@@ -20,6 +20,7 @@ Requirements:
 - GO `>= 1.24`
 - Quay registry setup
   - Database PostgreSQL or MySQL are both supported
+  - `DATABASE_SECRET_KEY` value from Quay configuration (required to decrypt robot tokens)
   - Quay API token (superuser)
 
 

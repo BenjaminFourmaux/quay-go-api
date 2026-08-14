@@ -28,3 +28,15 @@ func QuayApiError(errorCode int, errMessage string) *ApiError {
 		},
 	}
 }
+
+func QuayEncryptionKeyNotSet() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusInternalServerError,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "quay_encryption_key_not_set",
+				Message: "DATABASE_SECRET_KEY environment variable is not set. Provide the current Quay configuration database secret key.",
+			},
+		},
+	}
+}
