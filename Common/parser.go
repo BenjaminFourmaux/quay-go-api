@@ -6,7 +6,13 @@ import (
 	"quay-go-api/Services/Auth"
 	"quay-go-api/Services/Avatar"
 	"strings"
+	"time"
 )
+
+func ParseTime(datetime string) time.Time {
+	t, _ := time.Parse(time.RFC3339, datetime)
+	return t
+}
 
 func ConvertScopeStringInAuthScopes(scopesStr string) []Auth.Scope {
 	scopeIDs := strings.Split(scopesStr, " ")

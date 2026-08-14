@@ -309,6 +309,15 @@ definitions:
         description: In bits
         type: integer
     type: object
+  Dto.SecScanReport:
+    properties:
+      cves:
+        items:
+          $ref: '#/definitions/Dto.VulnerabilityCVE'
+        type: array
+      vulnerabilities:
+        $ref: '#/definitions/Dto.Vulnerabilities'
+    type: object
   Dto.Tag:
     properties:
       end_ts:
@@ -508,6 +517,26 @@ definitions:
         type: integer
       unspecified:
         type: integer
+    type: object
+  Dto.VulnerabilityCVE:
+    properties:
+      affected_packages:
+        type: string
+      affected_versions:
+        type: string
+      cve_id:
+        type: string
+      fixable:
+        description: version in witch this vulnerability is fixed, if empty then it
+          is not fixable
+        type: string
+      present_in:
+        description: '''layer'' or ''base'''
+        type: string
+      published_date:
+        type: string
+      severity_score:
+        type: number
     type: object
   Errors.ErrorDetails:
     properties:
@@ -1678,6 +1707,46 @@ paths:
       summary: Get a repository manifest label
       tags:
       - Manifest
+  /api/v1/repository/{repository}/manifest/{manifestRef}/security:
+    get:
+      description: Get security scan report for a manifest
+      parameters:
+      - description: Repository name in the format namespace/repository
+        in: path
+        name: repository
+        required: true
+        type: string
+      - description: Manifest reference sha256
+        in: path
+        name: manifestRef
+        required: true
+        type: string
+      - description: Include CVEs information
+        in: query
+        name: include_cve
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.SecScanReport'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get security scan report for a manifest
+      tags:
+      - SecurityScan
   /api/v1/repository/{repository}/permissions/team:
     get:
       description: List teams permission on a repository
@@ -2146,7 +2215,7 @@ paths:
         name: name
         required: true
         type: string
-      - description: Format of the output (html, json, svg, png). Default is html
+      - description: Format of the output (html, json, png). Default is html
         in: query
         name: format
         type: string
