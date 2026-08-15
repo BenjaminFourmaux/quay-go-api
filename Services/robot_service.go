@@ -18,7 +18,7 @@ func ListUserRobots(filters map[string]string, currentUser *Auth.AuthenticatedUs
 	return listRobots(filters, "user", strconv.Itoa(currentUser.ID), currentUser)
 }
 
-func ListOrganizationRobots(filters map[string]string, orgName string, currentUser *Auth.AuthenticatedUser) ([]Dto.Robot, error) {
+func ListOrganizationRobots(orgName string, filters map[string]string, currentUser *Auth.AuthenticatedUser) ([]Dto.Robot, error) {
 	return listRobots(filters, "organization", orgName, currentUser)
 }
 
@@ -79,7 +79,7 @@ func listRobots(filters map[string]string, kind string, kindIdOrName string, cur
 	}
 
 	// Convert models to DTOs
-	var robotDTOs []Dto.Robot
+	robotDTOs := []Dto.Robot{}
 	for _, robotModel := range robotUserModels {
 		robotDTO := Dto.Robot{
 			Name:         robotModel.Username,
@@ -118,7 +118,7 @@ func CreateUserRobot(robotToCreate Dto.CreateRobot, currentUser *Auth.Authentica
 	return createRobot(robotToCreate, "user", strconv.Itoa(currentUser.ID), currentUser)
 }
 
-func CreateOrganizationRobot(robotToCreate Dto.CreateRobot, orgName string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+func CreateOrganizationRobot(orgName string, robotToCreate Dto.CreateRobot, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
 	return createRobot(robotToCreate, "organization", orgName, currentUser)
 }
 

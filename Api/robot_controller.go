@@ -29,9 +29,22 @@ func robotController() {
 	organizationRobot := engine.Group("/api/v1/organization/:orgname/robots")
 	{
 		organizationRobot.Use(authorizedMiddleware)
-		/*organizationRobot.GET("", listOrganizationRobots)*/
+		organizationRobot.GET("", listOrganizationRobots)
+		organizationRobot.POST("", createOrganizationRobot)
+		organizationRobot.GET("/:robot_shortname", getOrganizationRobot)
+		organizationRobot.DELETE("/:robot_shortname", deleteOrganizationRobot)
+		organizationRobot.GET("/:robot_shortname/permissions", listOrganizationRobotPermissions)
+		organizationRobotFederation := organizationRobot.Group("/:robot_shortname/federation")
+		{
+			organizationRobotFederation.Use(authorizedMiddleware)
+			organizationRobotFederation.GET("", listOrganizationRobotFederation)
+			organizationRobotFederation.POST("", createOrUpdateOrganizationRobotFederation)
+			organizationRobotFederation.DELETE("", deleteOrganizationRobotFederation)
+		}
 	}
 }
+
+// <editor-fold desc="User (current user)">
 
 // listUserRobots List current user's robots accounts
 // @Description List current user's robots accounts
@@ -275,3 +288,270 @@ func deleteUserRobotFederation(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+// </editor-fold>
+
+// <editor-fold desc="Organization">
+
+// listOrganizationRobots List organization's robots accounts
+// @Description List organization's robots accounts
+// @Summary List organization's robots accounts
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param token query bool false "Show robot token (default: false)"
+// @Param repositories query bool false "Show robot repositories (default: false)"
+// @Success 200 {object} []Dto.Robot
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots [get]
+func listOrganizationRobots(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+
+	// Get filters from query params
+	filters := extractFilters(c)
+
+	robots, err := Services.ListOrganizationRobots(orgName, filters, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, robots)
+}
+
+// createOrganizationRobot Create for the organization a robot account
+// @Description Create for the organization a robot account
+// @Summary Create for the organization a robot account
+// @Tags Robot
+// @Accept json
+// @Param orgname path string true "Name of the organization"
+// @Param message body Dto.CreateRobot true "Robot metadata"
+// @Success 201 {object} Dto.Robot
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots [post]
+func createOrganizationRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	var robotToCreate Dto.CreateRobot
+	_ = c.BindJSON(&robotToCreate)
+
+	orgName := c.Param("orgname")
+
+	newRobot, err := Services.CreateOrganizationRobot(orgName, robotToCreate, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, newRobot)
+}
+
+// getOrganizationRobot Get a organization robot account
+// @Description Get a organization robot account
+// @Summary Get a organization robot account
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} Dto.Robot
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname} [get]
+func getOrganizationRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	robot, err := Services.GetOrganizationRobot(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, robot)
+}
+
+// deleteOrganizationRobot Delete a organization robot
+// @Description Delete a organization robot
+// @Summary Delete a organization robot
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname} [delete]
+func deleteOrganizationRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	err := Services.DeleteOrganizationRobot(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// listOrganizationRobotPermissions List a organization robot permissions
+// @Description List a organization robot permissions
+// @Summary List a organization robot permissions
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} []Dto.RobotPermission
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname}/permissions [get]
+func listOrganizationRobotPermissions(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	newRobot, err := Services.GetOrganizationRobotPermissions(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newRobot)
+}
+
+// listOrganizationRobotFederation List an organization robot federation
+// @Description List an organization robot federation
+// @Summary List an organization robot federation
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} []Dto.RobotFederation
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname}/federation [get]
+func listOrganizationRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	permissions, err := Services.ListOrganizationRobotFederations(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, permissions)
+}
+
+// createOrUpdateOrganizationRobotFederation Create or update an organization robot account federations
+// @Description Create or update an organization robot account federations
+// @Summary Create or update an organization robot account federations
+// @Tags Robot
+// @Accept json
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Param message body []Dto.RobotFederation true "Federations metadata"
+// @Success 201 {object} []Dto.RobotFederation
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname}/federation [post]
+func createOrUpdateOrganizationRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	var robotFederationsToCreate []Dto.RobotFederation
+	_ = c.BindJSON(&robotFederationsToCreate)
+
+	newFederations, err := Services.CreateOrUpdateOrganizationRobotFederations(orgName, robotShortname, robotFederationsToCreate, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, newFederations)
+}
+
+// deleteOrganizationRobotFederation Delete an organization robot federation
+// @Description Delete an organization robot federation
+// @Summary Delete an organization robot federation
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname}/federation [delete]
+func deleteOrganizationRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	err := Services.DeleteOrganizationRobotFederation(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// </editor-fold>
