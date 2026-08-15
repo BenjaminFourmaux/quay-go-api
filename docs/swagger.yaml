@@ -1430,8 +1430,6 @@ paths:
       - Repository
   /api/v1/repository/{repository}:
     delete:
-      consumes:
-      - application/json
       description: Delete a repository
       parameters:
       - description: Name of the repository
@@ -1444,6 +1442,10 @@ paths:
           description: No Content
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/Errors.ErrorResponse'
         "500":
@@ -2271,6 +2273,69 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create for the current user a robot account
+      tags:
+      - Robot
+  /api/v1/user/robots/{robot_shortname}:
+    delete:
+      description: Delete a user robot
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a user robot
+      tags:
+      - Robot
+    get:
+      description: Get a user robot
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.Robot'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a user robot
       tags:
       - Robot
   /api/v1/users/me:

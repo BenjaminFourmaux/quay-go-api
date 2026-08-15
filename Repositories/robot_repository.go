@@ -49,6 +49,17 @@ func GetRobotByName(robotName string, userId int) (Models.User, error) {
 	return robot, err
 }
 
+func GetRobotById(robotId int) (Models.User, error) {
+	var robot Models.User
+	err := Database.DB.
+		Preload("RobotAccountMetadata").
+		Preload("RobotAccountToken").
+		Preload("RepositoryPermissions").
+		Preload("RepositoryPermissions.Repository").
+		First(&robot, robotId).Error
+	return robot, err
+}
+
 func CreateRobotAccount(robotToCreate Models.User, robotMetadata Models.RobotAccountMetadata, robotToken Models.RobotAccountToken, federatedLogin Models.FederatedLogin) (Models.User, error) {
 	// Start a transaction
 	err := Database.DB.Transaction(func(tx *gorm.DB) error {
@@ -84,6 +95,35 @@ func CreateRobotAccount(robotToCreate Models.User, robotMetadata Models.RobotAcc
 	// Assemble metadata and token into robotToCreate
 	robotToCreate.RobotAccountMetadata = &robotMetadata
 	robotToCreate.RobotAccountToken = &robotToken
-	
+
 	return robotToCreate, err
+}
+
+func DeleteRobotAccount(robotId int) error {
+	// Start a transaction
+	err := Database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Delete the robot metadata
+		if err := tx.Where("robot_account_id = ?", robotId).Delete(&Models.RobotAccountMetadata{}).Error; err != nil {
+			return err
+		}
+
+		// 2. Delete the robot token
+		if err := tx.Where("robot_account_id = ?", robotId).Delete(&Models.RobotAccountToken{}).Error; err != nil {
+			return err
+		}
+
+		// 3. Delete the federated login
+		if err := tx.Where("user_id = ?", robotId).Delete(&Models.FederatedLogin{}).Error; err != nil {
+			return err
+		}
+
+		// 4. Delete the robot user
+		if err := tx.Delete(&Models.User{}, robotId).Error; err != nil {
+			return err
+		}
+
+		return nil // commit
+	})
+
+	return err
 }

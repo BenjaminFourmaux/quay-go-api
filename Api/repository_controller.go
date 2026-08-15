@@ -243,10 +243,10 @@ func updateRepository(c *gin.Context, repositoryName string) {
 // @Description Delete a repository
 // @Summary Delete a repository
 // @Tags Repository
-// @Accept json
 // @Param repository path string true "Name of the repository"
 // @Success 204
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/repository/{repository} [delete]

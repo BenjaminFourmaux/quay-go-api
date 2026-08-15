@@ -171,7 +171,7 @@ func createRobot(robotToCreate Dto.CreateRobot, kind string, kindIdOrName string
 	}
 
 	// Check if a robot with the same name already exists for this user/org
-	existingRobots, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotToCreate.Name), kindId)
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotToCreate.Name), kindId)
 	if err != nil {
 		switch err.Error() {
 		case "record not found":
@@ -181,7 +181,7 @@ func createRobot(robotToCreate Dto.CreateRobot, kind string, kindIdOrName string
 			return Dto.Robot{}, err
 		}
 	} else {
-		if existingRobots.ID != 0 {
+		if existingRobot.ID != 0 {
 			logger.Warning("A robot with the name %s already exists for %s", robotToCreate.Name, kindName)
 			return Dto.Robot{}, Errors.RobotAlreadyExists(Common.FormatRobotUsername(kindName, robotToCreate.Name))
 		}
@@ -241,6 +241,182 @@ func createRobot(robotToCreate Dto.CreateRobot, kind string, kindIdOrName string
 	}
 
 	return robotDTO, nil
+}
+
+func GetUserRobot(robotShortname string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	return getRobot(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func GetOrganizationRobot(orgName string, robotShortname string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	return getRobot(robotShortname, "organization", orgName, currentUser)
+}
+
+func getRobot(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) (Dto.Robot, error) {
+	logger.Info("[Robot Service] Get %s Robot account", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return Dto.Robot{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return Dto.Robot{}, err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return Dto.Robot{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return Dto.Robot{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return Dto.Robot{}, Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return Dto.Robot{}, err
+		}
+	}
+
+	// Retrieve robot with details
+	robotModel, err := Repositories.GetRobotById(existingRobot.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found": // This should never exist
+			logger.Warning("No robot found with id: %d", existingRobot.ID)
+			return Dto.Robot{}, Errors.RobotNotFoundById(existingRobot.ID)
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return Dto.Robot{}, err
+		}
+	}
+
+	// Convert model to dto
+	robotDTO := Dto.Robot{
+		Name:         robotModel.Username,
+		Description:  robotModel.RobotAccountMetadata.Description,
+		Created:      robotModel.CreationDate.Time,
+		LastAccessed: Common.ConvertSQLNullTimeToTime(robotModel.LastAccessed),
+	}
+
+	// Include token
+	if robotModel.RobotAccountToken != nil {
+		token, decryptErr := Common.DecryptAESCipherToken(robotModel.RobotAccountToken.Token)
+		if decryptErr != nil {
+			logger.Error("Error decrypting robot token for robot '%s': %v", robotModel.Username, decryptErr)
+			return Dto.Robot{}, decryptErr
+		}
+
+		robotDTO.Token = &token
+	}
+
+	// Include repository names
+	if robotModel.RepositoryPermissions != nil {
+		var repoNames []string
+		for _, repoPerm := range robotModel.RepositoryPermissions {
+			repoNames = append(repoNames, repoPerm.Repository.Name)
+		}
+		robotDTO.Repositories = &repoNames
+	}
+
+	return robotDTO, nil
+}
+
+func DeleteUserRobot(robotShortname string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRobot(robotShortname, "user", strconv.Itoa(currentUser.ID), &Auth.AuthenticatedUser{ID: currentUser.ID, Username: currentUser.Username})
+}
+
+func DeleteOrganizationRobot(robotShortname string, orgName string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRobot(robotShortname, "organization", orgName, &Auth.AuthenticatedUser{ID: currentUser.ID, Username: currentUser.Username})
+}
+
+func deleteRobot(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) error {
+	logger.Info("[Robot Service] Delete %s Robot account", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return err
+		}
+	}
+
+	// Delete the robot account from the db
+	err = Repositories.DeleteRobotAccount(existingRobot.ID)
+	if err != nil {
+		logger.Error("Error when deleting robot account: %s", err.Error())
+		return err
+	}
+
+	logger.Info("Robot account '%s' deleted successfully", existingRobot.Username)
+
+	return nil
 }
 
 func metadataMapToJSON(metadata map[string]interface{}) string {

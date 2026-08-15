@@ -1,6 +1,9 @@
 package Errors
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+)
 
 func RobotNameRequired() *ApiError {
 	return &ApiError{
@@ -33,6 +36,30 @@ func RobotAlreadyExists(name string) *ApiError {
 			Error: ErrorDetails{
 				Code:    "robot_already_exists",
 				Message: "A robot with the name '" + name + "' already exists",
+			},
+		},
+	}
+}
+
+func RobotNotFound(name string) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "robot_not_found",
+				Message: "No robot found with the name '" + name + "'",
+			},
+		},
+	}
+}
+
+func RobotNotFoundById(robotId int) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "robot_not_found",
+				Message: "No robot found with the id '" + strconv.Itoa(robotId) + "'",
 			},
 		},
 	}

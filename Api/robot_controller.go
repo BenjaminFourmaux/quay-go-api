@@ -14,6 +14,8 @@ func robotController() {
 		userRobot.Use(authorizedMiddleware)
 		userRobot.GET("", listUserRobots)
 		userRobot.POST("", createUserRobot)
+		userRobot.GET("/:robot_shortname", getUserRobot)
+		userRobot.DELETE("/:robot_shortname", deleteUserRobot)
 	}
 
 	organizationRobot := engine.Group("/api/v1/organization/:orgname/robots")
@@ -82,4 +84,63 @@ func createUserRobot(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, newRobot)
+}
+
+// getUserRobot Get a user robot
+// @Description Get a user robot
+// @Summary Get a user robot
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} Dto.Robot
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname} [get]
+func getUserRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	robot, err := Services.GetUserRobot(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, robot)
+}
+
+// deleteUserRobot Delete a user robot
+// @Description Delete a user robot
+// @Summary Delete a user robot
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname} [delete]
+func deleteUserRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	err := Services.DeleteUserRobot(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
