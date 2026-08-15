@@ -208,10 +208,8 @@ func createRobot(robotToCreate Dto.CreateRobot, kind string, kindIdOrName string
 	}
 
 	// Generate a random token for the robot account and encrypt it
-	rawToken := Common.RandomStringGenerator(64)
-	encryptedToken, encryptErr := Common.EncryptAESCipherToken(rawToken)
+	_, encryptedToken, encryptErr := generateEncryptedToken()
 	if encryptErr != nil {
-		logger.Error("Error encrypting robot token: %v", encryptErr)
 		return Dto.Robot{}, encryptErr
 	}
 
@@ -335,15 +333,6 @@ func getRobot(robotShortname string, kind string, kindIdOrName string, currentUs
 		robotDTO.Token = &token
 	}
 
-	// Include repository names
-	if robotModel.RepositoryPermissions != nil {
-		var repoNames []string
-		for _, repoPerm := range robotModel.RepositoryPermissions {
-			repoNames = append(repoNames, repoPerm.Repository.Name)
-		}
-		robotDTO.Repositories = &repoNames
-	}
-
 	return robotDTO, nil
 }
 
@@ -419,6 +408,96 @@ func deleteRobot(robotShortname string, kind string, kindIdOrName string, curren
 	return nil
 }
 
+func GetUserRobotPermissions(robotShortname string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotPermission, error) {
+	return getRobotPermissions(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func GetOrganizationRobotPermissions(orgName string, robotShortName string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotPermission, error) {
+	return getRobotPermissions(robotShortName, "organization", orgName, currentUser)
+}
+
+func getRobotPermissions(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotPermission, error) {
+	logger.Info("[Robot Service] Get %s Robot account permissions", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return []Dto.RobotPermission{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return []Dto.RobotPermission{}, err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return []Dto.RobotPermission{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return []Dto.RobotPermission{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return []Dto.RobotPermission{}, Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return []Dto.RobotPermission{}, err
+		}
+	}
+
+	// Retrieve robot with details
+	robotModel, err := Repositories.GetRobotById(existingRobot.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found": // This should never exist
+			logger.Warning("No robot found with id: %d", existingRobot.ID)
+			return []Dto.RobotPermission{}, Errors.RobotNotFoundById(existingRobot.ID)
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return []Dto.RobotPermission{}, err
+		}
+	}
+
+	// Convert model to dto
+	permissions := []Dto.RobotPermission{}
+	for _, repoPerm := range robotModel.RepositoryPermissions {
+		permissions = append(permissions, Dto.RobotPermission{
+			Repository: Dto.RobotPermissionRepository{
+				Name:     repoPerm.Repository.Name,
+				IsPublic: Common.MapRepositoryVisibilityById(repoPerm.Repository.VisibilityId) == "public",
+			},
+			Role: Common.MapRoleById(repoPerm.RoleId),
+		})
+	}
+
+	return permissions, nil
+}
+
+// <editor-fold desc="Private Methods">
+
 func metadataMapToJSON(metadata map[string]interface{}) string {
 	unstructuredMetadataJSON := "{}"
 	if metadata != nil {
@@ -432,3 +511,26 @@ func metadataMapToJSON(metadata map[string]interface{}) string {
 	}
 	return unstructuredMetadataJSON
 }
+
+func generateToken() string {
+	return Common.RandomStringGenerator(64)
+}
+
+/*
+generateEncryptedToken Generate a new token and encrypt it.
+Returns the raw token, the encrypted token and encryption error
+*/
+func generateEncryptedToken() (string, string, error) {
+	// Generate raw token
+	rawToken := generateToken()
+
+	// Encrypt the raw token
+	encryptedToken, encryptErr := Common.EncryptAESCipherToken(rawToken)
+	if encryptErr != nil {
+		logger.Error("Error encrypting robot token: %v", encryptErr)
+		return "", "", encryptErr
+	}
+	return rawToken, encryptedToken, nil
+}
+
+// </editor-fold>

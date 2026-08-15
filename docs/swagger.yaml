@@ -337,6 +337,20 @@ definitions:
       token:
         type: string
     type: object
+  Dto.RobotPermission:
+    properties:
+      repository:
+        $ref: '#/definitions/Dto.RobotPermissionRepository'
+      role:
+        type: string
+    type: object
+  Dto.RobotPermissionRepository:
+    properties:
+      is_public:
+        type: boolean
+      name:
+        type: string
+    type: object
   Dto.SecScanReport:
     properties:
       cves:
@@ -2336,6 +2350,43 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a user robot
+      tags:
+      - Robot
+  /api/v1/user/robots/{robot_shortname}/permissions:
+    get:
+      description: List a user robot permissions
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Dto.RobotPermission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List a user robot permissions
       tags:
       - Robot
   /api/v1/users/me:

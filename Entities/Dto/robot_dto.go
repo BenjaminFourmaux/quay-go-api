@@ -16,3 +16,13 @@ type CreateRobot struct {
 	Description          string                 `json:"description"`
 	UnstructuredMetadata map[string]interface{} `json:"unstructured_metadata,omitempty"`
 }
+
+type RobotPermission struct {
+	Repository RobotPermissionRepository `json:"repository"`
+	Role       string                    `json:"role"`
+}
+
+type RobotPermissionRepository struct {
+	Name     string `json:"name"`
+	IsPublic bool   `json:"is_public"`
+}

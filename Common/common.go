@@ -184,6 +184,30 @@ func MapLoginServiceId(loginServiceName string) int {
 	}
 }
 
+func MapRepositoryVisibilityById(visibilityId int) string {
+	switch visibilityId {
+	case 1:
+		return "public"
+	case 2:
+		return "private"
+	default:
+		return "unknown"
+	}
+}
+
+func MapRoleById(roleId int) string {
+	switch roleId {
+	case 1:
+		return "admin"
+	case 2:
+		return "write"
+	case 3:
+		return "read"
+	default:
+		return "unknown"
+	}
+}
+
 func FormatRobotUsername(username string, robotName string) string {
 	return username + "+" + robotName
 }

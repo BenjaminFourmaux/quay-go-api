@@ -16,6 +16,7 @@ func robotController() {
 		userRobot.POST("", createUserRobot)
 		userRobot.GET("/:robot_shortname", getUserRobot)
 		userRobot.DELETE("/:robot_shortname", deleteUserRobot)
+		userRobot.GET("/:robot_shortname/permissions", listUserRobotPermissions)
 	}
 
 	organizationRobot := engine.Group("/api/v1/organization/:orgname/robots")
@@ -143,4 +144,34 @@ func deleteUserRobot(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// listUserRobotPermissions List a user robot permissions
+// @Description List a user robot permissions
+// @Summary List a user robot permissions
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} []Dto.RobotPermission
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname}/permissions [get]
+func listUserRobotPermissions(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	newRobot, err := Services.GetUserRobotPermissions(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newRobot)
 }
