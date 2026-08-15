@@ -496,6 +496,101 @@ func getRobotPermissions(robotShortname string, kind string, kindIdOrName string
 	return permissions, nil
 }
 
+func ListUserRobotFederations(robotShortname string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotFederation, error) {
+	return listRobotFederations(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func ListOrganizationRobotFederations(orgName string, robotShortname string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotFederation, error) {
+	return listRobotFederations(robotShortname, "organization", orgName, currentUser)
+}
+
+func listRobotFederations(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotFederation, error) {
+	logger.Info("[Robot Service] Get %s Robot account federation", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return []Dto.RobotFederation{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return []Dto.RobotFederation{}, err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return []Dto.RobotFederation{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return []Dto.RobotFederation{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return []Dto.RobotFederation{}, Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return []Dto.RobotFederation{}, err
+		}
+	}
+
+	// Retrieve robot with details
+	robotModel, err := Repositories.GetRobotById(existingRobot.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found": // This should never exist
+			logger.Warning("No robot found with id: %d", existingRobot.ID)
+			return []Dto.RobotFederation{}, Errors.RobotNotFoundById(existingRobot.ID)
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return []Dto.RobotFederation{}, err
+		}
+	}
+
+	// Convert model to dto
+	federations := []Dto.RobotFederation{}
+	for _, federatedLogin := range robotModel.FederatedLogins {
+		var metadataJson Models.FederatedLoginMetadata
+		err = json.Unmarshal([]byte(federatedLogin.MetadataJson), &metadataJson)
+		if err != nil {
+			logger.Error("Error unmarshaling robot federated login metadata: %v", err)
+			return []Dto.RobotFederation{}, err
+		}
+
+		for _, metadata := range metadataJson.FederationConfig {
+			robotFederation := Dto.RobotFederation{
+				Issuer:  metadata.Issuer,
+				Subject: metadata.Subject,
+			}
+			federations = append(federations, robotFederation)
+		}
+	}
+
+	return federations, nil
+}
+
 // <editor-fold desc="Private Methods">
 
 func metadataMapToJSON(metadata map[string]interface{}) string {

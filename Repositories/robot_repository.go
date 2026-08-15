@@ -56,6 +56,7 @@ func GetRobotById(robotId int) (Models.User, error) {
 		Preload("RobotAccountToken").
 		Preload("RepositoryPermissions").
 		Preload("RepositoryPermissions.Repository").
+		Preload("FederatedLogins").
 		First(&robot, robotId).Error
 	return robot, err
 }

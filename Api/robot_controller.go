@@ -17,6 +17,11 @@ func robotController() {
 		userRobot.GET("/:robot_shortname", getUserRobot)
 		userRobot.DELETE("/:robot_shortname", deleteUserRobot)
 		userRobot.GET("/:robot_shortname/permissions", listUserRobotPermissions)
+		userRobotFederation := userRobot.Group("/:robot_shortname/federation")
+		{
+			userRobotFederation.Use(authorizedMiddleware)
+			userRobotFederation.GET("", listUserRobotFederation)
+		}
 	}
 
 	organizationRobot := engine.Group("/api/v1/organization/:orgname/robots")
@@ -168,6 +173,36 @@ func listUserRobotPermissions(c *gin.Context) {
 	robotShortname := c.Param("robot_shortname")
 
 	newRobot, err := Services.GetUserRobotPermissions(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newRobot)
+}
+
+// listUserRobotFederation List a user robot federation
+// @Description List a user robot federation
+// @Summary List a user robot federation
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} []Dto.RobotFederation
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname}/federation [get]
+func listUserRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	newRobot, err := Services.ListUserRobotFederations(robotShortname, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return

@@ -26,3 +26,8 @@ type RobotPermissionRepository struct {
 	Name     string `json:"name"`
 	IsPublic bool   `json:"is_public"`
 }
+
+type RobotFederation struct {
+	Issuer  string `json:"issuer"`
+	Subject string `json:"subject"`
+}

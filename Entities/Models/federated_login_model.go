@@ -14,3 +14,14 @@ type FederatedLogin struct {
 func (f *FederatedLogin) TableName() string {
 	return "federatedlogin"
 }
+
+/*
+FederatedLoginMetadata Model for serialize/deserialize json from field FederationLogin.MetadataJson
+*/
+type FederatedLoginMetadata struct {
+	FederationConfig []FederationConfig `json:"federation_config"`
+}
+type FederationConfig struct {
+	Issuer  string `json:"issuer"`
+	Subject string `json:"subject"`
+}
