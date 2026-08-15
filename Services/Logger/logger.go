@@ -90,12 +90,16 @@ func StringToLevel(level string) Level {
 	}
 }
 
+func levelPadding(level string) string {
+	return fmt.Sprintf("%-7s", level)
+}
+
 func logAt(level Level, message string) {
 	if !shouldLog(level) {
 		return
 	}
 
-	fmt.Println(getCurrentDatetime() + introducer + levelToString(level) + separator + message)
+	fmt.Println(getCurrentDatetime() + introducer + levelPadding(levelToString(level)) + separator + message)
 }
 
 func Debug(message string, args ...interface{}) {

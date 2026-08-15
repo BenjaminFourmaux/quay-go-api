@@ -10,7 +10,7 @@ That is why I decided to take over this API in Go to make it RESTful and provide
 This API can be deployed alongside the Quay Registry and interfaces with it via its database.
 
 > [!IMPORTANT]
-> Quay API reimplementation: **70%**
+> Quay API reimplementation: **80%**
 
 ## Get stated :rocket:
 
@@ -20,6 +20,7 @@ Requirements:
 - GO `>= 1.24`
 - Quay registry setup
   - Database PostgreSQL or MySQL are both supported
+  - `DATABASE_SECRET_KEY` value from Quay configuration (required to decrypt robot tokens)
   - Quay API token (superuser)
 
 

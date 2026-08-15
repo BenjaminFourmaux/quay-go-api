@@ -25,3 +25,15 @@ func UserNotFound(username string) *ApiError {
 		},
 	}
 }
+
+func UserNotFoundById(userId int) *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusNotFound,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "user_not_found",
+				Message: "The user with id '" + string(userId) + "' does not exist",
+			},
+		},
+	}
+}

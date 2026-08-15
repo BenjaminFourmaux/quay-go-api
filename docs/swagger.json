@@ -740,6 +740,489 @@
                 }
             }
         },
+        "/api/v1/organization/{orgname}/robots": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List organization's robots accounts",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List organization's robots accounts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Show robot token (default: false)",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Show robot repositories (default: false)",
+                        "name": "repositories",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Robot"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create for the organization a robot account",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create for the organization a robot account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Robot metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreateRobot"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Robot"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organization/{orgname}/robots/{robot_shortname}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a organization robot account",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Get a organization robot account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Robot"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a organization robot",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Delete a organization robot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organization/{orgname}/robots/{robot_shortname}/federation": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List an organization robot federation",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List an organization robot federation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create or update an organization robot account federations",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create or update an organization robot account federations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Federations metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete an organization robot federation",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Delete an organization robot federation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organization/{orgname}/robots/{robot_shortname}/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List a organization robot permissions",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List a organization robot permissions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotPermission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -1386,9 +1869,6 @@
                     }
                 ],
                 "description": "Delete a repository",
-                "consumes": [
-                    "application/json"
-                ],
                 "tags": [
                     "Repository"
                 ],
@@ -1408,6 +1888,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/Errors.ErrorResponse"
                         }
@@ -2528,6 +3014,433 @@
                 }
             }
         },
+        "/api/v1/user/robots": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List current user's robots accounts",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List current user's robots accounts",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Show robot token (default: false)",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Show robot repositories (default: false)",
+                        "name": "repositories",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.Robot"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create for the current user a robot account",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create for the current user a robot account",
+                "parameters": [
+                    {
+                        "description": "Robot metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Dto.CreateRobot"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Robot"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/robots/{robot_shortname}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a user robot",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Get a user robot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.Robot"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a user robot",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Delete a user robot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/robots/{robot_shortname}/federation": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List a user robot federation",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List a user robot federation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create or update a user robot account federations",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create or update a user robot account federations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Federations metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a user robot federation",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Delete a user robot federation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/robots/{robot_shortname}/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List a user robot permissions",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "List a user robot permissions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotPermission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -2743,6 +3656,21 @@
                 "namespace": {
                     "description": "Can be null if is a global repo, not organization scoped",
                     "type": "string"
+                }
+            }
+        },
+        "Dto.CreateRobot": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "unstructured_metadata": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -3093,6 +4021,66 @@
                 "size": {
                     "description": "In bits",
                     "type": "integer"
+                }
+            }
+        },
+        "Dto.Robot": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "last_accessed": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repositories": {
+                    "description": "List of repository names the robot has access to",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.RobotFederation": {
+            "type": "object",
+            "properties": {
+                "issuer": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.RobotPermission": {
+            "type": "object",
+            "properties": {
+                "repository": {
+                    "$ref": "#/definitions/Dto.RobotPermissionRepository"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.RobotPermissionRepository": {
+            "type": "object",
+            "properties": {
+                "is_public": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

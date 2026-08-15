@@ -1,6 +1,7 @@
 package Api
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -49,6 +50,7 @@ func endpointsRegistration() {
 	manifestController()
 	prototypeController()
 	secScanController()
+	robotController()
 
 	// Add Swagger endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(config *ginSwagger.Config) {
@@ -77,10 +79,15 @@ func authorizedMiddleware(c *gin.Context) {
 		c.AbortWithStatusJSON(err.StatusCode, err.Err)
 		return
 	}
+	
+	// Extract username from token data claim
+	var dataClaim map[string]interface{}
+	_ = json.Unmarshal([]byte(validatedToken.Data), &dataClaim)
 
 	// Add token retried scopes to the context for later use in the endpoint handler
 	c.Set("scopes", validatedToken.Scope)
 	c.Set("authenticatedUserId", validatedToken.AuthorizedUserID)
+	c.Set("authenticatedUsername", dataClaim["username"])
 	c.Set("token", rawToken)
 
 	// Log
@@ -98,14 +105,16 @@ func retrieveCurrentUser(c *gin.Context, scopes []Auth.Scope) (Auth.Authenticate
 	}
 	// If the user is allowed, retrieve the user information from the context (getting in the auth middleware) and return it
 	userId := c.GetInt("authenticatedUserId")
+	username := c.GetString("authenticatedUsername")
 	userToken := c.GetString("token")
 	userScopesInterface, _ := c.Get("scopes")
 	userScopes := Common.ConvertScopeStringInAuthScopes(userScopesInterface.(string))
 
 	authenticatedUser := Auth.AuthenticatedUser{
-		ID:     userId,
-		Scopes: userScopes,
-		Token:  userToken,
+		ID:       userId,
+		Username: username,
+		Scopes:   userScopes,
+		Token:    userToken,
 	}
 
 	return authenticatedUser, nil
