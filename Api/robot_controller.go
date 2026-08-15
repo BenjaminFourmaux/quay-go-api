@@ -21,6 +21,7 @@ func robotController() {
 		{
 			userRobotFederation.Use(authorizedMiddleware)
 			userRobotFederation.GET("", listUserRobotFederation)
+			userRobotFederation.POST("", createOrUpdateUserRobotFederation)
 		}
 	}
 
@@ -202,11 +203,44 @@ func listUserRobotFederation(c *gin.Context) {
 
 	robotShortname := c.Param("robot_shortname")
 
-	newRobot, err := Services.ListUserRobotFederations(robotShortname, &currentUser)
+	permissions, err := Services.ListUserRobotFederations(robotShortname, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, newRobot)
+	c.JSON(http.StatusOK, permissions)
+}
+
+// createOrUpdateUserRobotFederation Create or update a user robot account federations
+// @Description Create or update a user robot account federations
+// @Summary Create or update a user robot account federations
+// @Tags Robot
+// @Accept json
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Param message body []Dto.RobotFederation true "Federations metadata"
+// @Success 201 {object} []Dto.RobotFederation
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname}/federation [post]
+func createOrUpdateUserRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	var robotFederationsToCreate []Dto.RobotFederation
+	_ = c.BindJSON(&robotFederationsToCreate)
+
+	newFederations, err := Services.CreateOrUpdateUserRobotFederations(robotShortname, robotFederationsToCreate, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, newFederations)
 }

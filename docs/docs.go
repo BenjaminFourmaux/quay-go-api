@@ -2797,6 +2797,65 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create or update a user robot account federations",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Create or update a user robot account federations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Federations metadata",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.RobotFederation"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/user/robots/{robot_shortname}/permissions": {

@@ -64,3 +64,39 @@ func RobotNotFoundById(robotId int) *ApiError {
 		},
 	}
 }
+
+func FederationInvalidIssuer() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "federation_invalid_issuer",
+				Message: "Required Federation issuer is invalid or missing",
+			},
+		},
+	}
+}
+
+func FederationInvalidSubject() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "federation_invalid_subject",
+				Message: "Required Federation subject is invalid or missing",
+			},
+		},
+	}
+}
+
+func FederationIssuerMustBeURL() *ApiError {
+	return &ApiError{
+		StatusCode: http.StatusBadRequest,
+		Err: ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "federation_issuer_must_be_url",
+				Message: "Issuer must be a URL (http:// or https://)",
+			},
+		},
+	}
+}

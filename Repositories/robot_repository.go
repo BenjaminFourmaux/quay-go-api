@@ -128,3 +128,8 @@ func DeleteRobotAccount(robotId int) error {
 
 	return err
 }
+
+func UpdateFederatedLoginMetadata(federatedLoginId int, metadata string) error {
+	err := Database.DB.Model(&Models.FederatedLogin{}).Where("id = ?", federatedLoginId).Update("metadata_json", metadata).Error
+	return err
+}

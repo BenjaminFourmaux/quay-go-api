@@ -134,6 +134,25 @@ func ValidateCreateRobotAccount(robotMetadata Dto.CreateRobot) error {
 	return nil
 }
 
+func ValidateCreateRobotAccountFederations(federationsMetadata []Dto.RobotFederation) error {
+	for _, metadata := range federationsMetadata {
+		// Validate issuer field
+		if metadata.Issuer == "" || strings.TrimSpace(metadata.Issuer) == "" {
+			return Errors.FederationInvalidIssuer()
+		}
+
+		if !strings.HasPrefix(metadata.Issuer, "https://") && !strings.HasPrefix(metadata.Issuer, "http://") {
+			return Errors.FederationIssuerMustBeURL()
+		}
+
+		// Validate subject field
+		if metadata.Subject == "" || strings.TrimSpace(metadata.Subject) == "" {
+			return Errors.FederationInvalidSubject()
+		}
+	}
+	return nil
+}
+
 // </editor-fold>
 
 // <editor-fold desc="IsValid">

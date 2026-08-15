@@ -2396,6 +2396,44 @@ paths:
       summary: List a user robot federation
       tags:
       - Robot
+    post:
+      consumes:
+      - application/json
+      description: Create or update a user robot account federations
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      - description: Federations metadata
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/Dto.RobotFederation'
+          type: array
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/Dto.RobotFederation'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create or update a user robot account federations
+      tags:
+      - Robot
   /api/v1/user/robots/{robot_shortname}/permissions:
     get:
       description: List a user robot permissions
