@@ -696,7 +696,108 @@ func createOrUpdateRobotFederations(robotShortname string, robotFederationsToCre
 		return []Dto.RobotFederation{}, err
 	}
 
+	logger.Info("Successfully created or updated federated login metadata")
+
 	return robotFederationsToCreate, nil
+}
+
+func DeleteUserRobotFederation(robotShortname string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRobotFederation(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func DeleteOrganizationRobotFederation(orgName string, robotShortname string, currentUser *Auth.AuthenticatedUser) error {
+	return deleteRobotFederation(robotShortname, "organization", orgName, currentUser)
+}
+
+func deleteRobotFederation(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) error {
+	logger.Info("[Robot Service] Delete  %s Robot account federations", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return err
+		}
+	}
+
+	// Retrieve robot with details
+	robotModel, err := Repositories.GetRobotById(existingRobot.ID)
+	if err != nil {
+		switch err.Error() {
+		case "record not found": // This should never exist
+			logger.Warning("No robot found with id: %d", existingRobot.ID)
+			return Errors.RobotNotFoundById(existingRobot.ID)
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return err
+		}
+	}
+
+	// All validations passed
+	logger.Info("All validations passed")
+
+	// Convert dto to model
+	var metadataToDelete Models.FederatedLoginMetadata
+	metadataToDelete.FederationConfig = []Models.FederationConfig{}
+
+	// Parse struct ot json string
+	jsonMetadata, err := json.Marshal(metadataToDelete)
+	if err != nil {
+		logger.Error("Error marshaling metadata to JSON: %v", err)
+		return err
+	}
+
+	// Update the field MetadataJson from FederatedLogin
+	err = Repositories.UpdateFederatedLoginMetadata(robotModel.FederatedLogins[0].ID, string(jsonMetadata))
+	if err != nil {
+		logger.Error("Error updating federated login metadata: %v", err)
+		return err
+	}
+
+	logger.Info("Successfully deleting federated login metadata")
+
+	return nil
 }
 
 // <editor-fold desc="Private Methods">

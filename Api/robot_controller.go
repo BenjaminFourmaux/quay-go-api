@@ -22,6 +22,7 @@ func robotController() {
 			userRobotFederation.Use(authorizedMiddleware)
 			userRobotFederation.GET("", listUserRobotFederation)
 			userRobotFederation.POST("", createOrUpdateUserRobotFederation)
+			userRobotFederation.DELETE("", deleteUserRobotFederation)
 		}
 	}
 
@@ -221,6 +222,7 @@ func listUserRobotFederation(c *gin.Context) {
 // @Param message body []Dto.RobotFederation true "Federations metadata"
 // @Success 201 {object} []Dto.RobotFederation
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
 // @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /api/v1/user/robots/{robot_shortname}/federation [post]
@@ -243,4 +245,33 @@ func createOrUpdateUserRobotFederation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, newFederations)
+}
+
+// deleteUserRobotFederation Delete a user robot federation
+// @Description Delete a user robot federation
+// @Summary Delete a user robot federation
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 204
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname}/federation [delete]
+func deleteUserRobotFederation(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	err := Services.DeleteUserRobotFederation(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

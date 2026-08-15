@@ -2360,6 +2360,34 @@ paths:
       tags:
       - Robot
   /api/v1/user/robots/{robot_shortname}/federation:
+    delete:
+      description: Delete a user robot federation
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a user robot federation
+      tags:
+      - Robot
     get:
       description: List a user robot federation
       parameters:
@@ -2423,6 +2451,10 @@ paths:
             type: array
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/Errors.ErrorResponse'
         "500":
