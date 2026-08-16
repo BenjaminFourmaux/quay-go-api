@@ -31,3 +31,7 @@ type RobotFederation struct {
 	Issuer  string `json:"issuer"`
 	Subject string `json:"subject"`
 }
+
+type RobotToken struct {
+	Token string `json:"token"`
+}

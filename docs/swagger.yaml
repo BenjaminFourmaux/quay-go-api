@@ -358,6 +358,11 @@ definitions:
       name:
         type: string
     type: object
+  Dto.RobotToken:
+    properties:
+      token:
+        type: string
+    type: object
   Dto.SecScanReport:
     properties:
       cves:
@@ -1389,6 +1394,46 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List a organization robot permissions
+      tags:
+      - Robot
+  /api/v1/organization/{orgname}/robots/{robot_shortname}/regenerate:
+    post:
+      description: Regenerate the token of an organization robot account
+      parameters:
+      - description: Name of the organization
+        in: path
+        name: orgname
+        required: true
+        type: string
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.RobotToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Regenerate the token
       tags:
       - Robot
   /api/v1/organization/{orgname}/team:
@@ -2816,6 +2861,41 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List a user robot permissions
+      tags:
+      - Robot
+  /api/v1/user/robots/{robot_shortname}/regenerate:
+    post:
+      description: Regenerate the token of a user robot account
+      parameters:
+      - description: Shortname of the robot
+        in: path
+        name: robot_shortname
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Dto.RobotToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Errors.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Regenerate the token
       tags:
       - Robot
   /api/v1/users/me:

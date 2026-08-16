@@ -17,6 +17,7 @@ func robotController() {
 		userRobot.GET("/:robot_shortname", getUserRobot)
 		userRobot.DELETE("/:robot_shortname", deleteUserRobot)
 		userRobot.GET("/:robot_shortname/permissions", listUserRobotPermissions)
+		userRobot.POST("/:robot_shortname/regenerate", regenerateTokenUserRobot)
 		userRobotFederation := userRobot.Group("/:robot_shortname/federation")
 		{
 			userRobotFederation.Use(authorizedMiddleware)
@@ -34,6 +35,7 @@ func robotController() {
 		organizationRobot.GET("/:robot_shortname", getOrganizationRobot)
 		organizationRobot.DELETE("/:robot_shortname", deleteOrganizationRobot)
 		organizationRobot.GET("/:robot_shortname/permissions", listOrganizationRobotPermissions)
+		organizationRobot.POST("/:robot_shortname/regenerate", regenerateTokenOrganizationRobot)
 		organizationRobotFederation := organizationRobot.Group("/:robot_shortname/federation")
 		{
 			organizationRobotFederation.Use(authorizedMiddleware)
@@ -188,6 +190,36 @@ func listUserRobotPermissions(c *gin.Context) {
 	robotShortname := c.Param("robot_shortname")
 
 	newRobot, err := Services.GetUserRobotPermissions(robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newRobot)
+}
+
+// regenerateTokenUserRobot Regenerate the token of a user robot account
+// @Description Regenerate the token of a user robot account
+// @Summary Regenerate the token
+// @Tags Robot
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} Dto.RobotToken
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/user/robots/{robot_shortname}/regenerate [post]
+func regenerateTokenUserRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	robotShortname := c.Param("robot_shortname")
+
+	newRobot, err := Services.RegenerateUserRobotToken(robotShortname, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return
@@ -447,6 +479,38 @@ func listOrganizationRobotPermissions(c *gin.Context) {
 	robotShortname := c.Param("robot_shortname")
 
 	newRobot, err := Services.GetOrganizationRobotPermissions(orgName, robotShortname, &currentUser)
+	if err != nil {
+		throwError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newRobot)
+}
+
+// regenerateTokenOrganizationRobot Regenerate the token of an organization robot account
+// @Description Regenerate the token of an organization robot account
+// @Summary Regenerate the token
+// @Tags Robot
+// @Param orgname path string true "Name of the organization"
+// @Param robot_shortname path string true "Shortname of the robot"
+// @Success 200 {object} Dto.RobotToken
+// @Failure 400 {object} Errors.ErrorResponse "Bad Request"
+// @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
+// @Failure 404 {object} Errors.ErrorResponse "Not Found"
+// @Failure 500 {object} Errors.ErrorResponse "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /api/v1/organization/{orgname}/robots/{robot_shortname}/regenerate [post]
+func regenerateTokenOrganizationRobot(c *gin.Context) {
+	currentUser, hasScopeErr := retrieveCurrentUser(c, []Auth.Scope{})
+	if hasScopeErr != nil {
+		throwError(c, hasScopeErr)
+		return
+	}
+
+	orgName := c.Param("orgname")
+	robotShortname := c.Param("robot_shortname")
+
+	newRobot, err := Services.RegenerateOrganizationRobotToken(orgName, robotShortname, &currentUser)
 	if err != nil {
 		throwError(c, err)
 		return

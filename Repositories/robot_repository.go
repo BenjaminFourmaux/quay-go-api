@@ -129,6 +129,11 @@ func DeleteRobotAccount(robotId int) error {
 	return err
 }
 
+func UpdateRobotAccountToken(robotId int, newToken string) error {
+	err := Database.DB.Model(&Models.RobotAccountToken{}).Where("robot_account_id = ?", robotId).Update("token", newToken).Error
+	return err
+}
+
 func UpdateFederatedLoginMetadata(federatedLoginId int, metadata string) error {
 	err := Database.DB.Model(&Models.FederatedLogin{}).Where("id = ?", federatedLoginId).Update("metadata_json", metadata).Error
 	return err

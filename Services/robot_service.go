@@ -496,6 +496,83 @@ func getRobotPermissions(robotShortname string, kind string, kindIdOrName string
 	return permissions, nil
 }
 
+func RegenerateUserRobotToken(robotShortname string, currentUser *Auth.AuthenticatedUser) (Dto.RobotToken, error) {
+	return regenerateRobotToken(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
+}
+
+func RegenerateOrganizationRobotToken(orgName string, robotShortname string, currentUser *Auth.AuthenticatedUser) (Dto.RobotToken, error) {
+	return regenerateRobotToken(robotShortname, "organization", orgName, currentUser)
+}
+
+func regenerateRobotToken(robotShortname string, kind string, kindIdOrName string, currentUser *Auth.AuthenticatedUser) (Dto.RobotToken, error) {
+	logger.Info("[Robot Service] Regenerate %s Robot account token", kind)
+	logger.Debug("With robot shortname: %s", robotShortname)
+
+	// Check if the user or org exists
+	var kindId int
+	var kindName string // need to create the robot name in the format: <kindName>+<robotName>
+	if kind == "user" {
+		userExist, err := Repositories.GetUserById(Common.ParseStringToInt(kindIdOrName)) // The Current user is already authenticated, it will exist
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No user found with id: %s", kindIdOrName)
+				return Dto.RobotToken{}, Errors.UserNotFoundById(Common.ParseStringToInt(kindIdOrName))
+			default:
+				logger.Error("Error retrieving repository  from database: %s", err.Error())
+				return Dto.RobotToken{}, err
+			}
+		}
+
+		kindId = userExist.ID
+		kindName = userExist.Username
+	} else if kind == "organization" {
+		orgExist, err := Repositories.GetOrganizationByName(kindIdOrName)
+		if err != nil {
+			switch err.Error() {
+			case "record not found":
+				logger.Warning("No organization found with name: %s", kindIdOrName)
+				return Dto.RobotToken{}, Errors.OrganizationNotFound(kindIdOrName)
+			default:
+				logger.Error("Error retrieving organization from database: %s", err.Error())
+				return Dto.RobotToken{}, err
+			}
+		}
+
+		kindId = orgExist.ID
+		kindName = orgExist.Username
+	}
+
+	// Check if a robot with the same name already exists for this user/org
+	existingRobot, err := Repositories.GetRobotByName(Common.FormatRobotUsername(kindName, robotShortname), kindId)
+	if err != nil {
+		switch err.Error() {
+		case "record not found":
+			logger.Warning("No robot found with name: %s for %s", robotShortname, kindName)
+			return Dto.RobotToken{}, Errors.RobotNotFound(Common.FormatRobotUsername(kindName, robotShortname))
+		default:
+			logger.Error("Error checking existing robots: %s", err.Error())
+			return Dto.RobotToken{}, err
+		}
+	}
+
+	// Regenerate a token
+	newTokenRaw, newTokenEncrypted, encryptionError := generateEncryptedToken()
+	if encryptionError != nil {
+		return Dto.RobotToken{}, Errors.InternalServerErrorWithMsg(encryptionError.Error())
+	}
+
+	// Update token in db
+	err = Repositories.UpdateRobotAccountToken(existingRobot.ID, newTokenEncrypted)
+	if err != nil {
+		return Dto.RobotToken{}, err
+	}
+
+	return Dto.RobotToken{
+		Token: newTokenRaw,
+	}, nil
+}
+
 func ListUserRobotFederations(robotShortname string, currentUser *Auth.AuthenticatedUser) ([]Dto.RobotFederation, error) {
 	return listRobotFederations(robotShortname, "user", strconv.Itoa(currentUser.ID), currentUser)
 }

@@ -1231,6 +1231,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/organization/{orgname}/robots/{robot_shortname}/regenerate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Regenerate the token of an organization robot account",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Regenerate the token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the organization",
+                        "name": "orgname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.RobotToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organization/{orgname}/team": {
             "get": {
                 "security": [
@@ -3449,6 +3511,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/user/robots/{robot_shortname}/regenerate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Regenerate the token of a user robot account",
+                "tags": [
+                    "Robot"
+                ],
+                "summary": "Regenerate the token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortname of the robot",
+                        "name": "robot_shortname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Dto.RobotToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/me": {
             "get": {
                 "security": [
@@ -4088,6 +4205,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "Dto.RobotToken": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
