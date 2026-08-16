@@ -2,4 +2,7 @@
 #.idea
 .vs
 
+# Quay conf yaml files
+config/quay
+
 *.exe

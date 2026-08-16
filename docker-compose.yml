@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:10.12
+    container_name: quay_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quay
+      POSTGRES_PASSWORD: quaypassword
+      POSTGRES_DB: quay
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./conf/postgres-init:/docker-entrypoint-initdb.d:ro
+
+  redis:
+    image: redis:5.0.7
+    container_name: quay_redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "strongpassword"]
+    volumes:
+      - redis_data:/data
+
+  quay-config:
+    image: quay.io/projectquay/quay:3.18.0 # The latest tag isn't updated for 3 years old
+    container_name: quay_config_tool
+    command: ["config", "secret"]
+    ports:
+      - "9090:8080"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./config/quay:/conf/stack:rw
+      - quay_storage:/datastorage
+
+  quay:
+    image: quay.io/projectquay/quay:3.18.0 # The latest tag isn't updated for 3 years old
+    container_name: quay_registry
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./config/quay:/conf/stack:ro
+      - quay_storage:/datastorage
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - QUAY_DEBUG=true
+
+  quay-go-api:
+    build:
+      context: .
+    image: quay-go-api:testing
+    container_name: quay_go_api
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_TYPE=postgres
+      - DB_DSN=postgres://quay:quaypassword@postgres:5432/quay
+      - DATABASE_SECRET_KEY=<quay_config_database_secret_key>
+      - PORT=8080
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./config/quay:/conf/stack:ro
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data: {}
+  redis_data: {}
+  quay_storage: {}

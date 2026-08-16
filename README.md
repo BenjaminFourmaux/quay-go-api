@@ -33,6 +33,7 @@ Run the app
 ```
 export DB_TYPE=postgres # Database type (postrges of mysql)
 export DB_DSN="postgres://user:password@localhost:5432/quay" # ConnectionString to the database
+export DATABASE_SECRET_KEY=<quay_config_database_secret_key>
 export PORT=8080 # (optional) Port where the api is listening (default: 8080)
 export LOG_LEVEL=DEBUG # (optional) Adjust the log verbosity. Can be "DEBUG", "INFO", "WARNING" or "ERROR" (default: "DEBUG")
 go run main.go
@@ -59,6 +60,11 @@ docker pull benjaminfourmauxb/quay-go-api:latest
 Run the container
 ```
 docker run -d -e DB_TYPE=postgres -e DB_DSN=postgres://user:password@localhost:5432/quay -p 8080:8080 benjaminfourmauxb/quay-go-api:latest
+```
+
+or with Docker Compose 
+```
+docker-compose up -d
 ```
 
 ## Features ✨
