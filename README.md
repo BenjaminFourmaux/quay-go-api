@@ -52,7 +52,7 @@ swag init
 
 ### Docker image 🐳
 
-Pull the Docker image from [Docker Hub](https://hub.docker.com/r/benjaminfourmauxb/quay-go-api)
+Pull the Docker image from [Docker Hub - quay-go-api](https://hub.docker.com/r/benjaminfourmauxb/quay-go-api)
 ```
 docker pull benjaminfourmauxb/quay-go-api:latest
 ```

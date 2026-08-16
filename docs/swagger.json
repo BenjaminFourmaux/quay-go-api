@@ -4457,5 +4457,63 @@
             "name": "Authorization",
             "in": "header"
         }
+    },
+    "tags": [
+        {
+            "description": "global messages",
+            "name": "Messages"
+        },
+        {
+            "description": "Manage the manifest of a repository",
+            "name": "Manifest"
+        },
+        {
+            "description": "Manage organizations",
+            "name": "Organization"
+        },
+        {
+            "description": "Manage organization's members",
+            "name": "Members"
+        },
+        {
+            "description": "Manage repository permissions",
+            "name": "Permission"
+        },
+        {
+            "description": "Manage default permissions added to repositories",
+            "name": "Prototype"
+        },
+        {
+            "description": "List, create and manage repositories",
+            "name": "Repository"
+        },
+        {
+            "description": "Manage user and organization robot accounts",
+            "name": "Robot"
+        },
+        {
+            "description": "List and manage repository vulnerabilities and other security information",
+            "name": "SecurityScan"
+        },
+        {
+            "description": "Manage the tags of a repository",
+            "name": "Tag"
+        },
+        {
+            "description": "Create, list and manage and organization's teams",
+            "name": "Team"
+        },
+        {
+            "description": "Manage users",
+            "name": "Users"
+        },
+        {
+            "description": "Get user, team or organization avatar",
+            "name": "Avatar"
+        }
+    ],
+    "externalDocs": {
+        "description": "Wiki",
+        "url": "https://github.com/BenjaminFourmaux/quay-go-api/wiki"
     }
 }
