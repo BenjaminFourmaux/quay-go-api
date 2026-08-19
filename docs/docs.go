@@ -2124,7 +2124,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/Dto.Manifest"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Dto.ManifestLabel"
+                            }
                         }
                     },
                     "400": {

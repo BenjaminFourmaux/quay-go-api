@@ -52,7 +52,7 @@ func getManifest(c *gin.Context, repositoryNamespaced string) {
 // @Tags Manifest
 // @Param repository path string true "Repository name in the format namespace/repository"
 // @Param manifestRef path string true "Manifest reference sha256"
-// @Success 200 {object} Dto.Manifest
+// @Success 200 {object} []Dto.ManifestLabel
 // @Failure 400 {object} Errors.ErrorResponse "Bad Request"
 // @Failure 401 {object} Errors.ErrorResponse "Unauthorized"
 // @Failure 404 {object} Errors.ErrorResponse "Not Found"

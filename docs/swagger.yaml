@@ -1968,7 +1968,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Dto.Manifest'
+            items:
+              $ref: '#/definitions/Dto.ManifestLabel'
+            type: array
         "400":
           description: Bad Request
           schema:
