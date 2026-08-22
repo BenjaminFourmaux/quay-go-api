@@ -9,6 +9,8 @@ That is why I decided to take over this API in Go to make it RESTful and provide
 
 This API can be deployed alongside the Quay Registry and interfaces with it via its database.
 
+[![](./docs/schema-use-quay-go-api.png)]
+
 > [!IMPORTANT]
 > Quay API reimplementation: **80%**
 
