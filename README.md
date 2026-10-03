@@ -14,6 +14,14 @@ This API can be deployed alongside the Quay Registry and interfaces with it via 
 > [!IMPORTANT]
 > Quay API reimplementation: **80%**
 
+## Features ✨
+
+- **More endpoints** — Adding some new endpoints for better objects manipulation and automation.
+- **Direct database connection** — Connects directly to the Quay database, bypassing the Quay API layer.
+- **Improved error handling** — Structured and consistent error responses for easier debugging and integration.
+- **Better REST compliance** — Follows REST principles more closely with proper HTTP methods, status codes, and resource naming.
+- **Bettter performance** — On average, Go reduces query execution time by **96.8%** compared to Python.
+
 ## Get stated :rocket:
 
 ### Local 💻
@@ -68,14 +76,6 @@ or with Docker Compose
 ```
 docker-compose up -d
 ```
-
-## Features ✨
-
-- **More endpoints** — Adding some new endpoints for better objects manipulation and automation.
-- **Direct database connection** — Connects directly to the Quay database, bypassing the Quay API layer.
-- **Improved error handling** — Structured and consistent error responses for easier debugging and integration.
-- **Better REST compliance** — Follows REST principles more closely with proper HTTP methods, status codes, and resource naming.
-- **Bettter performance** — On average, Go reduces query execution time by **96.8%** compared to Python.
 
 ## Documentation 📚
 
